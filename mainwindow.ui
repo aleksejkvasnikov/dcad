@@ -1,0 +1,373 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>810</width>
+    <height>511</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>DETAL CAD v.1</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="res.qrc">
+    <normaloff>:/icons/icons/stupid_logo.png</normaloff>:/icons/icons/stupid_logo.png</iconset>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>99999</width>
+     <height>99999</height>
+    </size>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QSplitter" name="splitter_2">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <widget class="QSplitter" name="splitter">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <widget class="QTreeView" name="treeView"/>
+       <widget class="QVTKOpenGLNativeWidget" name="openGLWidget"/>
+      </widget>
+      <widget class="QTextEdit" name="textEdit"/>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QStatusBar" name="statusBar">
+   <property name="statusTip">
+    <string/>
+   </property>
+  </widget>
+  <action name="actionSaveAs">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/icons/48px-Document-save-as.png</normaloff>:/icons/icons/48px-Document-save-as.png</iconset>
+   </property>
+   <property name="text">
+    <string>Сохранить как</string>
+   </property>
+   <property name="toolTip">
+    <string>Сохранить как</string>
+   </property>
+  </action>
+  <action name="actionOpen">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/icons/48px-Document-open.png</normaloff>:/icons/icons/48px-Document-open.png</iconset>
+   </property>
+   <property name="text">
+    <string>Открыть</string>
+   </property>
+   <property name="toolTip">
+    <string>Открыть</string>
+   </property>
+  </action>
+  <action name="actionSave">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/icons/48px-Document-save.png</normaloff>:/icons/icons/48px-Document-save.png</iconset>
+   </property>
+   <property name="text">
+    <string>Сохранить</string>
+   </property>
+   <property name="toolTip">
+    <string>Сохранить</string>
+   </property>
+  </action>
+  <action name="actionScale">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/icons/Scale.png</normaloff>:/icons/icons/Scale.png</iconset>
+   </property>
+   <property name="text">
+    <string>Scale</string>
+   </property>
+  </action>
+  <action name="actionPolypaint">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/icons/48px-Polypaint.png</normaloff>:/icons/icons/48px-Polypaint.png</iconset>
+   </property>
+   <property name="text">
+    <string>Polypaint</string>
+   </property>
+  </action>
+  <action name="actionSettings">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/icons/48px-Preferences-system.png</normaloff>:/icons/icons/48px-Preferences-system.png</iconset>
+   </property>
+   <property name="text">
+    <string>Настройки</string>
+   </property>
+   <property name="toolTip">
+    <string>Настройки</string>
+   </property>
+  </action>
+  <action name="actionDummy">
+   <property name="text">
+    <string>dummy</string>
+   </property>
+  </action>
+  <action name="actionRedo">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/icons/48px-Edit-redo.png</normaloff>:/icons/icons/48px-Edit-redo.png</iconset>
+   </property>
+   <property name="text">
+    <string>redo</string>
+   </property>
+  </action>
+  <action name="actionUndo">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/icons/48px-Edit-undo.png</normaloff>:/icons/icons/48px-Edit-undo.png</iconset>
+   </property>
+   <property name="text">
+    <string>undo</string>
+   </property>
+  </action>
+  <action name="actionClose">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/icons/close.png</normaloff>:/icons/icons/close.png</iconset>
+   </property>
+   <property name="text">
+    <string>Закрыть</string>
+   </property>
+   <property name="toolTip">
+    <string>Закрыть</string>
+   </property>
+  </action>
+  <action name="actionHelp">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/icons/Help-browser.png</normaloff>:/icons/icons/Help-browser.png</iconset>
+   </property>
+   <property name="text">
+    <string>Руководство</string>
+   </property>
+   <property name="toolTip">
+    <string>Руководство</string>
+   </property>
+  </action>
+  <action name="actionLoadSTEPSTL">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/icons/load.png</normaloff>:/icons/icons/load.png</iconset>
+   </property>
+   <property name="text">
+    <string>Загрузить</string>
+   </property>
+   <property name="toolTip">
+    <string>Загрузить модель</string>
+   </property>
+  </action>
+  <action name="actionFreqs">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/icons/freq.png</normaloff>:/icons/icons/freq.png</iconset>
+   </property>
+   <property name="text">
+    <string>⠀Дипазон частот</string>
+   </property>
+   <property name="toolTip">
+    <string>Задать диапазон частот</string>
+   </property>
+  </action>
+  <action name="actionUnits">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/icons/units.png</normaloff>:/icons/icons/units.png</iconset>
+   </property>
+   <property name="text">
+    <string>⠀Единицы измерений</string>
+   </property>
+   <property name="toolTip">
+    <string>Задать единицы измерений</string>
+   </property>
+  </action>
+  <action name="actionBG">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/icons/bg1.png</normaloff>:/icons/icons/bg1.png</iconset>
+   </property>
+   <property name="text">
+    <string>⠀Фоновая среда</string>
+   </property>
+   <property name="toolTip">
+    <string>Задать фоновую среду</string>
+   </property>
+  </action>
+  <action name="actionMaterials">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/icons/materials.png</normaloff>:/icons/icons/materials.png</iconset>
+   </property>
+   <property name="text">
+    <string>Материалы</string>
+   </property>
+   <property name="toolTip">
+    <string>Создать материал</string>
+   </property>
+  </action>
+  <action name="actionDiscPort">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/icons/11865390.png</normaloff>:/icons/icons/11865390.png</iconset>
+   </property>
+   <property name="text">
+    <string>Дискретный
+	порт</string>
+   </property>
+   <property name="toolTip">
+    <string>Создать дискретный порт</string>
+   </property>
+  </action>
+  <action name="actionFieldMonitor">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/icons/field.png</normaloff>:/icons/icons/field.png</iconset>
+   </property>
+   <property name="text">
+    <string>Монитор поля</string>
+   </property>
+   <property name="toolTip">
+    <string>Создать монитор поля</string>
+   </property>
+  </action>
+  <action name="actionMesh">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/icons/2507164.png</normaloff>:/icons/icons/2507164.png</iconset>
+   </property>
+   <property name="text">
+    <string>Расчетная сетка</string>
+   </property>
+   <property name="toolTip">
+    <string>Настройки расчетной сетки</string>
+   </property>
+  </action>
+  <action name="actionMeshView">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/icons/free-magnifying-glass-icon-2916-thumb.png</normaloff>:/icons/icons/free-magnifying-glass-icon-2916-thumb.png</iconset>
+   </property>
+   <property name="text">
+    <string>Просмотр</string>
+   </property>
+   <property name="toolTip">
+    <string>Просмотр сетки</string>
+   </property>
+  </action>
+  <action name="actionSolverSettings">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/icons/settings.png</normaloff>:/icons/icons/settings.png</iconset>
+   </property>
+   <property name="text">
+    <string>Настройки</string>
+   </property>
+   <property name="toolTip">
+    <string>Настройки решателя</string>
+   </property>
+  </action>
+  <action name="actionSolverStart">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/icons/run.png</normaloff>:/icons/icons/run.png</iconset>
+   </property>
+   <property name="text">
+    <string>Старт</string>
+   </property>
+   <property name="toolTip">
+    <string>Запуск решателя</string>
+   </property>
+  </action>
+  <action name="actionLoadStep">
+   <property name="text">
+    <string>Загрузить STEP</string>
+   </property>
+   <property name="toolTip">
+    <string>Загрузить STEP</string>
+   </property>
+  </action>
+  <action name="actionLoadSTL">
+   <property name="text">
+    <string>Загрузить STL</string>
+   </property>
+   <property name="toolTip">
+    <string>Загрузить STL</string>
+   </property>
+  </action>
+  <action name="actionExamples">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/icons/48px-Polypaint.png</normaloff>:/icons/icons/48px-Polypaint.png</iconset>
+   </property>
+   <property name="text">
+    <string>Примеры</string>
+   </property>
+   <property name="toolTip">
+    <string>Примеры</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/icons/48px-Package-x-generic.svg.png</normaloff>:/icons/icons/48px-Package-x-generic.svg.png</iconset>
+   </property>
+   <property name="text">
+    <string>О программе</string>
+   </property>
+   <property name="toolTip">
+    <string>О программе</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/icons/48px-System-log-out.png</normaloff>:/icons/icons/48px-System-log-out.png</iconset>
+   </property>
+   <property name="text">
+    <string>Выход</string>
+   </property>
+   <property name="toolTip">
+    <string>Выход</string>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>QVTKOpenGLNativeWidget</class>
+   <extends>QOpenGLWidget</extends>
+   <header>QVTKOpenGLNativeWidget.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="res.qrc"/>
+ </resources>
+ <connections/>
+</ui>
