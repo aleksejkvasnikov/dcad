@@ -57,6 +57,9 @@ private slots:
 
     void on_cancelButton4_clicked();
 
+	void on_createButton4_clicked();
+signals:
+	void projectIsReady();
 private:
     bool isValidDouble(QLineEdit *lineEdit);
     bool isValidInt(QLineEdit *lineEdit);

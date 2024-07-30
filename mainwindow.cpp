@@ -83,7 +83,8 @@ CMainWindow::CMainWindow(QWidget* parent) :
 	tabToolbar = ttb.CreateTabToolbar(":/tt/tabtoolbar.json");
 	
 	addToolBar(Qt::TopToolBarArea, tabToolbar);
-	
+	tabToolbar->getTabWidget()->setTabEnabled(1, false); // блокируем вкладки
+	tabToolbar->getTabWidget()->setTabEnabled(2, false);
 
 	QObject::connect(ui->actionLoadStep, &QAction::triggered, this, [this]() // заменить позднее на загрузку модели
 	{
@@ -357,6 +358,8 @@ inline void CMainWindow::AddShapeToVTKRenderer(vtkSmartPointer<vtkRenderer> rend
 void CMainWindow::createFirstTab()
 {
 	prCreator = new ProjectCreator;
+	connect(prCreator, SIGNAL(projectIsReady()), this, SLOT(projectCreationSlot()));
+
 	centralwidgetMenu = new QWidget(this);
 
 	QVBoxLayout *verticalLayout_5;
@@ -419,6 +422,8 @@ void CMainWindow::createFirstTab()
 		"    background-repeat: none;"      // Не повторяем изображение
 		"}"
 	);
+	createProjectButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+
 	connect(createProjectButton, &QPushButton::clicked, this, &CMainWindow::onCreateProjectButtonClicked);
 
 	leftVertLayout->addWidget(createProjectButton);
@@ -469,6 +474,7 @@ void CMainWindow::createFirstTab()
 	latestListWidget->addItem("Project 3 - C:/Projects/Project3/project3.proj");
 	latestListWidget->addItem("Project 4 - C:/Projects/Project4/project4.proj");
 	latestListWidget->addItem("Project 5 - C:/Projects/Project5/project5.proj");
+	latestListWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
 
 	leftVertLayoutIn1->addWidget(latestListWidget);
 
@@ -512,6 +518,7 @@ void CMainWindow::createFirstTab()
 	examplesListWidget->addItem("Example 3.proj");
 	examplesListWidget->addItem("Example 4.proj");
 	examplesListWidget->addItem("Example 5.proj");
+	examplesListWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
 
 	leftVertLayoutIn2->addWidget(examplesListWidget);
 
@@ -552,7 +559,8 @@ void CMainWindow::createFirstTab()
 		"}"
 	);
 	guideButton->setText("Руководство пользователя");
-
+	//guideButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
+	guideButton->setMaximumWidth(350);
 	rightVertLayout->addWidget(guideButton);
 
 	aboutButton = new QPushButton(centralwidgetMenu);
@@ -567,6 +575,8 @@ void CMainWindow::createFirstTab()
 		"}"
 	);
 	aboutButton->setText("О программе");
+	aboutButton->setMaximumWidth(350);
+	//aboutButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
 
 	rightVertLayout->addWidget(aboutButton);
 
@@ -587,11 +597,16 @@ void CMainWindow::createFirstTab()
 		"Автор: Иван Иванов\n"
 		"Описание:\n"
 		"Этот проект включает в себя разработку и симуляцию фазированных антенных решеток. Основные цели проекта включают оптимизацию структуры решеток для повышения эффективности и уменьшения помех");
+	infoTextBrowser->setMaximumWidth(350);
+	//infoTextBrowser->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
 
 	rightVertLayout->addWidget(infoTextBrowser);
 
 
 	mainHorLayout->addLayout(rightVertLayout);
+	QLabel* emptyLabel = new QLabel("");
+	emptyLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+	mainHorLayout->addWidget(emptyLabel);
 
 
 	verticalLayout_5->addLayout(mainHorLayout);
@@ -599,6 +614,11 @@ void CMainWindow::createFirstTab()
 }
 void CMainWindow::onCreateProjectButtonClicked() {
 	prCreator->show();
+}
+void CMainWindow::projectCreationSlot()
+{
+	tabToolbar->getTabWidget()->setTabEnabled(1, true); // разблокируем вкладки
+	tabToolbar->getTabWidget()->setTabEnabled(2, true);
 }
 void CMainWindow::displayMenuWidgets(int a) {
 	tabToolbar->SetCurrentTab(a);

@@ -118,6 +118,7 @@ public:
 public slots:
 	void displayMenuWidgets(int a);
 	void onCreateProjectButtonClicked();
+	void projectCreationSlot();
 private:
 	Handle(XCAFDoc_ShapeTool) shapeTool;
 	Handle(XCAFDoc_ColorTool) colorTool;

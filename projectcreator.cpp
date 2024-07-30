@@ -231,3 +231,10 @@ void ProjectCreator::on_cancelButton4_clicked()
 	ui->stackedWidget->setCurrentIndex(0);
     close();
 }
+
+void ProjectCreator::on_createButton4_clicked()
+{
+	emit projectIsReady();
+	QMessageBox::information(this, tr("Проект создан"), "Ваш проект успешно создан");
+	close();
+}
