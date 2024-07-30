@@ -202,10 +202,10 @@
      <normaloff>:/icons/icons/units.png</normaloff>:/icons/icons/units.png</iconset>
    </property>
    <property name="text">
-    <string>⠀Единицы измерений</string>
+    <string>⠀Единицы измерения</string>
    </property>
    <property name="toolTip">
-    <string>Задать единицы измерений</string>
+    <string>Задать единицы измерения</string>
    </property>
   </action>
   <action name="actionBG">

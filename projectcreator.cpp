@@ -8,9 +8,11 @@ ProjectCreator::ProjectCreator(QWidget *parent)
     ui->setupUi(this);
     prSet = new ProjectSettings;
 
-    ui->pointsNumberEdit->hide();
-    ui->pointsNumberLabel->hide();
+	ui->freqStepLabel->hide();
+	ui->freqStepLineEdit->hide();
+	ui->freqStepUnitLabel->hide();
 
+	setWindowFlags(Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint);
 
     // Установка валидаторов для ввода чисел
     QDoubleValidator *doubleValidator = new QDoubleValidator(this);
@@ -46,11 +48,13 @@ void ProjectCreator::on_dirPlaceButton_clicked()
 
 void ProjectCreator::on_exitButton1_clicked()
 {
+	ui->stackedWidget->setCurrentIndex(0);
     close();
 }
 
 void ProjectCreator::on_cancelButton1_clicked()
 {
+	ui->stackedWidget->setCurrentIndex(0);
     close();
 }
 
@@ -83,6 +87,7 @@ void ProjectCreator::on_backButton2_clicked()
 
 void ProjectCreator::on_cancelButton2_clicked()
 {
+	ui->stackedWidget->setCurrentIndex(0);
     close();
 }
 
@@ -105,6 +110,7 @@ void ProjectCreator::on_backButton3_clicked()
 
 void ProjectCreator::on_cancelButton3_clicked()
 {
+	ui->stackedWidget->setCurrentIndex(0);
     close();
 }
 
@@ -167,10 +173,13 @@ void ProjectCreator::on_nextButton3_clicked()
     if (valid) {
         QString commonStyle = "style='font-size:16px; color: #000000;'";
 
-        QString solverText = "<b " + commonStyle + ">Решатель:</b><hr>"
-                             "<ul style='margin: 0; padding:0; list-style-type: disc;'>"
-                             "<li><b style='font-size:14px; color: #000;'>" + ui->solverComboBox->currentText() + "</b></li>"
-                             "</ul>";
+		QString solverTypePic;
+		if (ui->solverComboBox->currentIndex() == 0) solverTypePic = "<li><img src=':/icons/icons/mom.png' width='24' height='24' style='margin-left: auto; margin-right: auto;'></li>";
+		else solverTypePic = "<li><img src=':/icons/icons/fdtd.png' width='24' height='24' style='margin-left: auto; margin-right: auto;'></li>";
+		QString solverText = "<b " + commonStyle + ">Решатель:</b><hr>"
+			"<ul style='margin: 0; padding:0; list-style-type: none;'>"
+			"<li><b style='font-size:14px; color: #000;'>" + ui->solverComboBox->currentText() + "</b></li>" +
+			solverTypePic + "</ul>";
         ui->solverTextBrowser->setHtml(solverText);
 
         QString unitsText = "<b " + commonStyle + ">Единицы измерения:</b><hr>"
@@ -183,10 +192,10 @@ void ProjectCreator::on_nextButton3_clicked()
 
         QString freqsText = "<b " + commonStyle + ">Диапазон частот:</b><hr>"
                             "<ul style='margin: 0; padding:0; list-style-type: circle;'>"
-                            "<li><b>fMin:</b> " + ui->freqMinEdit->text() + " " + ui->freqsComboBox->currentText() +  "</li>"
-                            "<li><b>fMax:</b> " + ui->freqMaxEdit->text() + " " + ui->freqsComboBox->currentText() +  "</li>";
+                            "<li><b>f min:</b> " + ui->freqMinEdit->text() + " " + ui->freqsComboBox->currentText() +  "</li>"
+                            "<li><b>f max:</b> " + ui->freqMaxEdit->text() + " " + ui->freqsComboBox->currentText() +  "</li>";
         if (ui->freqStepRadioButton->isChecked()) {
-            freqsText += "<li><b>fStep:</b> " + ui->freqStepLineEdit->text() + " " + ui->freqsComboBox->currentText() +  "</li>";
+            freqsText += "<li><b>f step:</b> " + ui->freqStepLineEdit->text() + " " + ui->freqsComboBox->currentText() +  "</li>";
         } else if (ui->pointsNumberRadioButton->isChecked()) {
             freqsText += "<li><b>Число точек:</b> " + ui->pointsNumberEdit->text() + "</li>";
         }
@@ -219,5 +228,6 @@ void ProjectCreator::on_backButton4_clicked()
 
 void ProjectCreator::on_cancelButton4_clicked()
 {
+	ui->stackedWidget->setCurrentIndex(0);
     close();
 }

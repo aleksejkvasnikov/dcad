@@ -41,6 +41,8 @@
         <file>icons/default.png</file>
         <file>icons/hover.png</file>
         <file>icons/pressed.png</file>
+        <file>icons/fdtd.png</file>
+        <file>icons/mom.png</file>
     </qresource>
     <qresource prefix="/tt">
         <file>tabtoolbar.json</file>

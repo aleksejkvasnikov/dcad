@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>509</width>
+    <width>502</width>
     <height>309</height>
    </rect>
   </property>
@@ -18,12 +18,18 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="createPage">
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
          <widget class="QLabel" name="createTopLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="font">
            <font>
             <pointsize>14</pointsize>
@@ -43,11 +49,18 @@
         </item>
         <item>
          <layout class="QGridLayout" name="gridLayout">
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="prNameEdit"/>
+          </item>
           <item row="1" column="1">
            <widget class="QLineEdit" name="dirPlaceEdit"/>
           </item>
-          <item row="0" column="1">
-           <widget class="QLineEdit" name="prNameEdit"/>
+          <item row="1" column="0">
+           <widget class="QLabel" name="dirPlaceLabel">
+            <property name="text">
+             <string>Расположение:</string>
+            </property>
+           </widget>
           </item>
           <item row="0" column="0">
            <widget class="QLabel" name="prNameLabel">
@@ -63,22 +76,15 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="dirPlaceLabel">
-            <property name="text">
-             <string>Расположение:</string>
-            </property>
-           </widget>
-          </item>
          </layout>
         </item>
         <item>
-         <spacer name="verticalSpacer">
+         <spacer name="verticalSpacer_2">
           <property name="orientation">
            <enum>Qt::Vertical</enum>
           </property>
           <property name="sizeType">
-           <enum>QSizePolicy::Minimum</enum>
+           <enum>QSizePolicy::MinimumExpanding</enum>
           </property>
           <property name="sizeHint" stdset="0">
            <size>
@@ -132,6 +138,12 @@
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
          <widget class="QLabel" name="unitsTopLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="font">
            <font>
             <pointsize>14</pointsize>
@@ -159,6 +171,9 @@
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="currentIndex">
+             <number>1</number>
+            </property>
             <item>
              <property name="text">
               <string>мкм</string>
@@ -167,6 +182,11 @@
             <item>
              <property name="text">
               <string>мм</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>см</string>
              </property>
             </item>
             <item>
@@ -199,9 +219,22 @@
           </item>
           <item row="2" column="1">
            <widget class="QComboBox" name="timeComboBox">
+            <property name="currentIndex">
+             <number>1</number>
+            </property>
+            <item>
+             <property name="text">
+              <string>пс</string>
+             </property>
+            </item>
             <item>
              <property name="text">
               <string>нс</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>мкс</string>
              </property>
             </item>
             <item>
@@ -218,9 +251,17 @@
           </item>
           <item row="1" column="1">
            <widget class="QComboBox" name="freqsComboBox">
+            <property name="currentIndex">
+             <number>3</number>
+            </property>
             <item>
              <property name="text">
               <string>Гц</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>КГц</string>
              </property>
             </item>
             <item>
@@ -238,9 +279,12 @@
          </layout>
         </item>
         <item>
-         <spacer name="verticalSpacer_2">
+         <spacer name="verticalSpacer">
           <property name="orientation">
            <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::MinimumExpanding</enum>
           </property>
           <property name="sizeHint" stdset="0">
            <size>
@@ -294,6 +338,12 @@
        <layout class="QVBoxLayout" name="verticalLayout_4">
         <item>
          <widget class="QLabel" name="solverTopLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="font">
            <font>
             <pointsize>14</pointsize>
@@ -357,16 +407,6 @@
             </property>
            </widget>
           </item>
-          <item row="3" column="0">
-           <widget class="QRadioButton" name="freqStepRadioButton">
-            <property name="text">
-             <string>Шаг по частоте</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
           <item row="1" column="0">
            <widget class="QLabel" name="freqMinLabel">
             <property name="text">
@@ -395,13 +435,6 @@
             </property>
            </widget>
           </item>
-          <item row="3" column="2">
-           <widget class="QRadioButton" name="pointsNumberRadioButton">
-            <property name="text">
-             <string>Число точек</string>
-            </property>
-           </widget>
-          </item>
           <item row="5" column="0">
            <widget class="QLabel" name="pointsNumberLabel">
             <property name="text">
@@ -410,7 +443,34 @@
            </widget>
           </item>
           <item row="5" column="2">
-           <widget class="QLineEdit" name="pointsNumberEdit"/>
+           <widget class="QLineEdit" name="pointsNumberEdit">
+            <property name="text">
+             <string>1001</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="2">
+           <widget class="QRadioButton" name="freqStepRadioButton">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="text">
+             <string>Шаг по частоте</string>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QRadioButton" name="pointsNumberRadioButton">
+            <property name="text">
+             <string>Число точек</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
           </item>
          </layout>
         </item>
@@ -458,6 +518,12 @@
        <layout class="QVBoxLayout" name="verticalLayout_5">
         <item>
          <widget class="QLabel" name="finishTopLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="font">
            <font>
             <pointsize>14</pointsize>
@@ -501,6 +567,22 @@
            <widget class="QTextBrowser" name="freqsTextBrowser"/>
           </item>
          </layout>
+        </item>
+        <item>
+         <spacer name="verticalSpacer_3">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::MinimumExpanding</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_5">
@@ -551,7 +633,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>509</width>
+     <width>502</width>
      <height>21</height>
     </rect>
    </property>
