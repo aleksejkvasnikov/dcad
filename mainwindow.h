@@ -100,6 +100,24 @@ struct InternalData
 	Standard_Boolean hasColors[XCAFDoc_ColorCurv + 1];
 	Quantity_ColorRGBA colors[XCAFDoc_ColorCurv + 1];
 };
+struct ProjectData {
+	QString name;
+	QString directory;
+	QString creationDate;
+	QString lastModifiedDate;
+	QString author;
+	QString geometryUnits;
+	QString frequencyUnits;
+	QString timeUnits;
+	QString solverType;
+	QString freqMin;
+	QString freqMax;
+	QString freqStep;
+	QString pointsNumber;
+	bool useFreqStep;
+	bool usePointsNumber;
+	bool hasUnsavedChanges = true; // заменить!!!!
+};
 class CMainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -118,7 +136,8 @@ public:
 public slots:
 	void displayMenuWidgets(int a);
 	void onCreateProjectButtonClicked();
-	void projectCreationSlot();
+	void openProject(QString filePath);
+	void onOpenProjectButtonClicked();
 protected:
 	void resizeEvent(QResizeEvent *event) override {
 		QMainWindow::resizeEvent(event);
@@ -140,10 +159,14 @@ private:
 	
 	QWidget *centralwidgetMenu;
 	ProjectCreator* prCreator;
+	ProjectData projectData;
 
 	QLabel *backPicLabel;
-	void updateLabelPosition();
+	QString currentProjectFilePath;
 
+	void saveProjectChanges();
+	void updateLabelPosition();
+	void clearProjectData();
 	void createFirstTab();
 };
 

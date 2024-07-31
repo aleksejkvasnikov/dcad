@@ -269,14 +269,30 @@ void ProjectCreator::on_createButton4_clicked()
 		return;
 	}
 
+	// Получаем текущую дату и время
+	QString creationDate = QDateTime::currentDateTime().toString(Qt::ISODate);
+
+	// Получаем имя текущего пользователя Windows
+	QString authorName = qgetenv("USERNAME");
+	if (authorName.isEmpty())
+		authorName = qgetenv("USER");  // Для Unix-подобных систем
+
 	// Создаем XML документ
 	QDomDocument document;
 	QDomElement root = document.createElement("Project");
 	document.appendChild(root);
 
 	// Добавляем данные в XML
+	QDomElement projectInfoElement = document.createElement("ProjectInfo");
+	projectInfoElement.setAttribute("Name", projectName);
+	projectInfoElement.setAttribute("Directory", fullPath);
+	projectInfoElement.setAttribute("CreationDate", creationDate);
+	projectInfoElement.setAttribute("LastModifiedDate", creationDate);  // Добавляем дату последнего изменения
+	projectInfoElement.setAttribute("Author", authorName);
+	root.appendChild(projectInfoElement);
+
 	QDomElement unitsElement = document.createElement("Units");
-	unitsElement.setAttribute("Geometry", ui->dimsComboBox->currentText());
+	unitsElement.setAttribute("Geometry", ui->dimsComboBox->currentText()); // заменить на латиницу!!!!
 	unitsElement.setAttribute("Frequency", ui->freqsComboBox->currentText());
 	unitsElement.setAttribute("Time", ui->timeComboBox->currentText());
 	root.appendChild(unitsElement);
@@ -302,10 +318,10 @@ void ProjectCreator::on_createButton4_clicked()
 	}
 
 	// Сохранение XML в файл
-	QString filePath = QDir(fullPath).filePath("project.xml");
+	QString filePath = QDir(fullPath).filePath(projectName+".proj");
 	QFile file(filePath);
 	if (!file.open(QIODevice::WriteOnly)) {
-		QMessageBox::warning(this, tr("Ошибка"), tr("Не удалось создать XML файл проекта."));
+		QMessageBox::warning(this, tr("Ошибка"), tr("Не удалось создать файл проекта."));
 		return;
 	}
 
@@ -316,7 +332,7 @@ void ProjectCreator::on_createButton4_clicked()
 	// Выполнение оставшихся операций
 	ui->stackedWidget->setCurrentIndex(0);
 	clearAllInputData();
-	emit projectIsReady();
+	emit projectIsReady(filePath);
 	close();
 }
 

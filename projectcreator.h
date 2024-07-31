@@ -12,6 +12,8 @@
 #include <QFile>
 #include <QDomDocument>
 #include <QTextStream>
+#include <QDateTime>
+#include <QSysInfo>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class ProjectCreator; }
@@ -65,7 +67,7 @@ private slots:
 
 	void on_createButton4_clicked();
 signals:
-	void projectIsReady();
+	void projectIsReady(QString);
 private:
     bool isValidDouble(QLineEdit *lineEdit);
     bool isValidInt(QLineEdit *lineEdit);

@@ -86,13 +86,63 @@ CMainWindow::CMainWindow(QWidget* parent) :
 	tabToolbar->getTabWidget()->setTabEnabled(1, false); // блокируем вкладки
 	tabToolbar->getTabWidget()->setTabEnabled(2, false);
 
+
+
 	QObject::connect(ui->actionLoadStep, &QAction::triggered, this, [this]() // заменить позднее на загрузку модели
 	{
 		QMessageBox::information(this, "Kek", "Cheburek");
 	});
-
-	tt::Page* filePage = (tt::Page*)ttb["File"];
+	QObject::connect(ui->actionOpen, SIGNAL(triggered()), this, SLOT(onOpenProjectButtonClicked()));
+	QObject::connect(ui->actionExit, &QAction::triggered, this, [this]() 
+	{
+		// Проверка на изменения
+		if (projectData.hasUnsavedChanges) { // булев флаг в структуре ProjectData
+			QMessageBox::StandardButton reply;
+			reply = QMessageBox::question(this, tr("Сохранить изменения"),
+				tr("В проект были внесены изменения. Хотите их сохранить?"),
+				QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+			if (reply == QMessageBox::Yes) {
+				// Вызов метода для сохранения изменений
+				saveProjectChanges();
+			}
+			else if (reply == QMessageBox::Cancel) {
+				return; // Отменяем закрытие, если пользователь выбрал "Отмена"
+			}
+		}
+		// Очистка полей структуры
+		clearProjectData();
+		// проверка на изменения - хотите сохранить?
+		close();
+	});
+	QObject::connect(ui->actionClose, &QAction::triggered, this, [this]()
+	{
+		// Проверка на изменения
+		if (projectData.hasUnsavedChanges) { // булев флаг в структуре ProjectData
+			QMessageBox::StandardButton reply;
+			reply = QMessageBox::question(this, tr("Сохранить изменения"),
+				tr("В проект были внесены изменения. Хотите их сохранить?"),
+				QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+			if (reply == QMessageBox::Yes) {
+				// Вызов метода для сохранения изменений
+				saveProjectChanges();
+			}
+			else if (reply == QMessageBox::Cancel) {
+				return; // Отменяем закрытие, если пользователь выбрал "Отмена"
+			}
+		}
+		// Очистка полей структуры
+		clearProjectData();
+		// Установка стартового окна
+		tabToolbar->SetCurrentTab(0);
+		// Блокируем вкладки
+		tabToolbar->getTabWidget()->setTabEnabled(1, false);
+		tabToolbar->getTabWidget()->setTabEnabled(2, false);
+		// Устанавливаем заголовок окна
+		setWindowTitle("DETAL CAD v.1");
+	});
 	QObject::connect(tabToolbar, &tt::TabToolbar::CurrentTabChanged2, this, &CMainWindow::displayMenuWidgets);
+
+
 
 
 	tabToolbar->SetStyle("Kool");
@@ -354,6 +404,60 @@ inline void CMainWindow::AddShapeToVTKRenderer(vtkSmartPointer<vtkRenderer> rend
 	renderer->AddActor(actor);
 }
 
+void CMainWindow::saveProjectChanges()
+{
+	// Логика сохранения изменений в XML-файл
+	QString filePath = currentProjectFilePath;  // путь к файлу проекта сохранен в переменной
+	QFile file(filePath);
+	if (!file.open(QIODevice::WriteOnly)) {
+		QMessageBox::warning(this, tr("Ошибка"), tr("Не удалось сохранить изменения в проекте."));
+		return;
+	}
+
+	QDomDocument document;
+	QDomElement root = document.createElement("Project");
+	document.appendChild(root);
+
+	// Перезаписываем данные в XML
+	QDomElement projectInfoElement = document.createElement("ProjectInfo");
+	projectInfoElement.setAttribute("Name", projectData.name);
+	projectInfoElement.setAttribute("Directory", projectData.directory);
+	projectInfoElement.setAttribute("CreationDate", projectData.creationDate);
+	projectInfoElement.setAttribute("LastModifiedDate", QDateTime::currentDateTime().toString(Qt::ISODate));  // Добавляем дату последнего изменения
+	projectInfoElement.setAttribute("Author", projectData.author);
+	root.appendChild(projectInfoElement);
+
+	QDomElement unitsElement = document.createElement("Units");
+	unitsElement.setAttribute("Geometry", projectData.geometryUnits);
+	unitsElement.setAttribute("Frequency", projectData.frequencyUnits);
+	unitsElement.setAttribute("Time", projectData.timeUnits);
+	root.appendChild(unitsElement);
+
+	QDomElement solverElement = document.createElement("Solver");
+	solverElement.setAttribute("Type", projectData.solverType);
+	root.appendChild(solverElement);
+
+	QDomElement frequencyElement = document.createElement("FrequencyRange");
+	frequencyElement.setAttribute("Min", projectData.freqMin);
+	frequencyElement.setAttribute("Max", projectData.freqMax);
+	root.appendChild(frequencyElement);
+
+	if (projectData.useFreqStep) {
+		QDomElement stepElement = document.createElement("FrequencyStep");
+		stepElement.setAttribute("Value", projectData.freqStep);
+		root.appendChild(stepElement);
+	}
+	else if (projectData.usePointsNumber) {
+		QDomElement pointsElement = document.createElement("PointsNumber");
+		pointsElement.setAttribute("Value", projectData.pointsNumber);
+		root.appendChild(pointsElement);
+	}
+
+	QTextStream stream(&file);
+	stream << document.toString();
+	file.close();
+}
+
 inline void CMainWindow::updateLabelPosition() {
 	int labelWidth = backPicLabel->width();
 	int labelHeight = backPicLabel->height();
@@ -365,11 +469,109 @@ inline void CMainWindow::updateLabelPosition() {
 	backPicLabel->lower();
 }
 
+void CMainWindow::clearProjectData()
+{
+	// Очистка данных в структуре ProjectData
+	projectData.name.clear();
+	projectData.directory.clear();
+	projectData.creationDate.clear();
+	projectData.author.clear();
+	projectData.geometryUnits.clear();
+	projectData.frequencyUnits.clear();
+	projectData.timeUnits.clear();
+	projectData.solverType.clear();
+	projectData.freqMin.clear();
+	projectData.freqMax.clear();
+	projectData.freqStep.clear();
+	projectData.pointsNumber.clear();
+	projectData.useFreqStep = false;
+	projectData.usePointsNumber = false;
+	projectData.hasUnsavedChanges = false; // Сбрасываем флаг изменений
+}
+
+void CMainWindow::openProject(QString filePath)
+{
+	QFile file(filePath);
+	if (!file.open(QIODevice::ReadOnly)) {
+		QMessageBox::warning(this, tr("Ошибка"), tr("Не удалось открыть файл проекта."));
+		return;
+	}
+
+	QDomDocument document;
+	if (!document.setContent(&file)) {
+		QMessageBox::warning(this, tr("Ошибка"), tr("Не удалось разобрать XML из файла проекта."));
+		file.close();
+		return;
+	}
+	file.close();
+
+	QDomElement root = document.documentElement();
+	if (root.tagName() != "Project") {
+		QMessageBox::warning(this, tr("Ошибка"), tr("Неверный формат файла проекта."));
+		return;
+	}
+
+	QDomElement projectInfoElement = root.firstChildElement("ProjectInfo");
+	if (!projectInfoElement.isNull()) {
+		projectData.name = projectInfoElement.attribute("Name");
+		projectData.directory = projectInfoElement.attribute("Directory");
+		projectData.creationDate = projectInfoElement.attribute("CreationDate");
+		projectData.lastModifiedDate = projectInfoElement.attribute("LastModifiedDate");
+		projectData.author = projectInfoElement.attribute("Author");
+	}
+
+	QDomElement unitsElement = root.firstChildElement("Units");
+	if (!unitsElement.isNull()) {
+		projectData.geometryUnits = unitsElement.attribute("Geometry");
+		projectData.frequencyUnits = unitsElement.attribute("Frequency");
+		projectData.timeUnits = unitsElement.attribute("Time");
+	}
+
+	QDomElement solverElement = root.firstChildElement("Solver");
+	if (!solverElement.isNull()) {
+		projectData.solverType = solverElement.attribute("Type");
+	}
+
+	QDomElement frequencyElement = root.firstChildElement("FrequencyRange");
+	if (!frequencyElement.isNull()) {
+		projectData.freqMin = frequencyElement.attribute("Min");
+		projectData.freqMax = frequencyElement.attribute("Max");
+	}
+
+	QDomElement stepElement = root.firstChildElement("FrequencyStep");
+	if (!stepElement.isNull()) {
+		projectData.freqStep = stepElement.attribute("Value");
+		projectData.useFreqStep = true;
+		projectData.usePointsNumber = false;
+	}
+
+	QDomElement pointsElement = root.firstChildElement("PointsNumber");
+	if (!pointsElement.isNull()) {
+		projectData.pointsNumber = pointsElement.attribute("Value");
+		projectData.usePointsNumber = true;
+		projectData.useFreqStep = false;
+	}
+
+	// Теперь projectData заполнена, и вы можете использовать эту структуру для дальнейшей работы
+	// Например, передать ее в другие функции или сохранить как текущий проект.
+
+	// Пример использования данных проекта:
+	QMessageBox::information(this, tr("Проект загружен"), tr("Проект '%1' успешно загружен.").arg(projectData.name));
+	currentProjectFilePath = filePath;
+
+	setWindowTitle("DETAL CAD v.1: " + projectData.name);
+
+	tabToolbar->getTabWidget()->setTabEnabled(1, true); // разблокируем вкладки
+	tabToolbar->getTabWidget()->setTabEnabled(2, true);
+
+	tabToolbar->SetCurrentTab(1);
+}
+
 // функция создания стартового окна - необходимо переделать
 void CMainWindow::createFirstTab()
 {
 	prCreator = new ProjectCreator;
-	connect(prCreator, SIGNAL(projectIsReady()), this, SLOT(projectCreationSlot()));
+	connect(prCreator, SIGNAL(projectIsReady(QString)), this, SLOT(openProject(QString)));
 
 	centralwidgetMenu = new QWidget(this);
 
@@ -663,14 +865,15 @@ void CMainWindow::createFirstTab()
 void CMainWindow::onCreateProjectButtonClicked() {
 	prCreator->show();
 }
-void CMainWindow::projectCreationSlot()
-{
-	tabToolbar->getTabWidget()->setTabEnabled(1, true); // разблокируем вкладки
-	tabToolbar->getTabWidget()->setTabEnabled(2, true);
 
-	tabToolbar->SetCurrentTab(1);
-	// WindowTitle должен стать равным имени проекта
+void CMainWindow::onOpenProjectButtonClicked()
+{
+	QString filePath = QFileDialog::getOpenFileName(this, tr("Открыть проект"), "", tr("Project Files (*.proj)"));
+	if (filePath.isEmpty())
+		return;
+	openProject(filePath);
 }
+
 void CMainWindow::displayMenuWidgets(int a) {
 	tabToolbar->SetCurrentTab(a);
 
