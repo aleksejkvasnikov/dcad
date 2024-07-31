@@ -7,6 +7,7 @@ find_package(Qt5Core       5.3 REQUIRED)
 find_package(Qt5Gui        5.3 REQUIRED)
 find_package(Qt5Widgets    5.3 REQUIRED)
 find_package(Qt5OpenGL    5.3 REQUIRED)
+find_package(Qt5Xml    5.3 REQUIRED)
 
 find_package(OpenCASCADE REQUIRED PATHS ${OpenCASCADE_DIR} NO_DEFAULT_PATH)
 include_directories(${OpenCASCADE_INCLUDE_DIR})
@@ -65,6 +66,7 @@ target_link_libraries(Test
     Qt5::Gui
     Qt5::Widgets
 	Qt5::OpenGL
+	Qt5::Xml
 	${VTK_LIBRARIES}
 	${OpenCASCADE_LIBRARIES}
 )

@@ -28,7 +28,7 @@
       "name":"File",
       "groups":[
 		{
-          "displayName":"Меню",
+          "displayName":"Проект",
           "name":"MenuGroup",
           "content":[
             {
@@ -129,7 +129,7 @@
                 {
                   "itemType":"action",
                   "type":"delayedPopup",
-                  "name":"actionBG"
+                  "name":"actionCD"
                 }
               ]
             }

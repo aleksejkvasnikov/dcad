@@ -208,16 +208,16 @@
     <string>Задать единицы измерения</string>
    </property>
   </action>
-  <action name="actionBG">
+  <action name="actionCD">
    <property name="icon">
     <iconset resource="res.qrc">
      <normaloff>:/icons/icons/bg1.png</normaloff>:/icons/icons/bg1.png</iconset>
    </property>
    <property name="text">
-    <string>⠀Фоновая среда</string>
+    <string>⠀Расчетная область</string>
    </property>
    <property name="toolTip">
-    <string>Задать фоновую среду</string>
+    <string>Задать гранцы расчетной области</string>
    </property>
   </action>
   <action name="actionMaterials">

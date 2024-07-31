@@ -8,6 +8,11 @@
 #include <QDoubleValidator>
 #include <QIntValidator>
 #include <QLineEdit>
+#include <QDir>
+#include <QFile>
+#include <QDomDocument>
+#include <QTextStream>
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class ProjectCreator; }
 QT_END_NAMESPACE
@@ -25,6 +30,7 @@ class ProjectCreator : public QMainWindow
 public:
     ProjectCreator(QWidget *parent = nullptr);
     ~ProjectCreator();
+	void clearAllInputData();
 
 private slots:
     void on_dirPlaceButton_clicked();

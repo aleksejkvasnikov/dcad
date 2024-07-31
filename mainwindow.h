@@ -85,7 +85,7 @@
 
 
 #include "projectcreator.h"
-
+#include <QResizeEvent>
 namespace Ui {
 class MainWindow;
 }
@@ -119,6 +119,11 @@ public slots:
 	void displayMenuWidgets(int a);
 	void onCreateProjectButtonClicked();
 	void projectCreationSlot();
+protected:
+	void resizeEvent(QResizeEvent *event) override {
+		QMainWindow::resizeEvent(event);
+		updateLabelPosition();
+	}
 private:
 	Handle(XCAFDoc_ShapeTool) shapeTool;
 	Handle(XCAFDoc_ColorTool) colorTool;
@@ -135,6 +140,10 @@ private:
 	
 	QWidget *centralwidgetMenu;
 	ProjectCreator* prCreator;
+
+	QLabel *backPicLabel;
+	void updateLabelPosition();
+
 	void createFirstTab();
 };
 

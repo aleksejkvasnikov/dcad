@@ -12,8 +12,6 @@ ProjectCreator::ProjectCreator(QWidget *parent)
 	ui->freqStepLineEdit->hide();
 	ui->freqStepUnitLabel->hide();
 
-	setWindowFlags(Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint);
-
     // Установка валидаторов для ввода чисел
     QDoubleValidator *doubleValidator = new QDoubleValidator(this);
     QIntValidator *intValidator = new QIntValidator(this);
@@ -27,13 +25,33 @@ ProjectCreator::ProjectCreator(QWidget *parent)
     ui->unitsTextBrowser->setStyleSheet("QTextBrowser { border: none; background: transparent; }");
     ui->freqsTextBrowser->setStyleSheet("QTextBrowser { border: none; background: transparent; }");
 
-    resize(620,100);
+	setFixedSize(620,270);
 
 }
 
 ProjectCreator::~ProjectCreator()
 {
     delete ui;
+}
+
+void ProjectCreator::clearAllInputData()
+{
+	ui->prNameEdit->clear();
+	ui->dirPlaceEdit->clear();
+
+	ui->dimsComboBox->setCurrentIndex(1);
+	ui->freqsComboBox->setCurrentIndex(3);
+	ui->timeComboBox->setCurrentIndex(1);
+
+	ui->solverComboBox->setCurrentIndex(0);
+	ui->freqMinEdit->clear();
+	ui->freqMaxEdit->clear();
+
+	ui->pointsNumberRadioButton->setChecked(true);
+	ui->pointsNumberRadioButton->setChecked(false);
+
+	ui->pointsNumberEdit->setText("1001");
+	ui->freqStepLineEdit->clear();
 }
 
 
@@ -49,12 +67,14 @@ void ProjectCreator::on_dirPlaceButton_clicked()
 void ProjectCreator::on_exitButton1_clicked()
 {
 	ui->stackedWidget->setCurrentIndex(0);
+	clearAllInputData();
     close();
 }
 
 void ProjectCreator::on_cancelButton1_clicked()
 {
 	ui->stackedWidget->setCurrentIndex(0);
+	clearAllInputData();
     close();
 }
 
@@ -88,6 +108,7 @@ void ProjectCreator::on_backButton2_clicked()
 void ProjectCreator::on_cancelButton2_clicked()
 {
 	ui->stackedWidget->setCurrentIndex(0);
+	clearAllInputData();
     close();
 }
 
@@ -111,6 +132,7 @@ void ProjectCreator::on_backButton3_clicked()
 void ProjectCreator::on_cancelButton3_clicked()
 {
 	ui->stackedWidget->setCurrentIndex(0);
+	clearAllInputData();
     close();
 }
 
@@ -229,12 +251,72 @@ void ProjectCreator::on_backButton4_clicked()
 void ProjectCreator::on_cancelButton4_clicked()
 {
 	ui->stackedWidget->setCurrentIndex(0);
+	clearAllInputData();
     close();
 }
 
 void ProjectCreator::on_createButton4_clicked()
 {
+	// Получаем значения из интерфейса
+	QString projectPath = ui->dirPlaceEdit->text();
+	QString projectName = ui->prNameEdit->text();
+	QString fullPath = QDir(projectPath).filePath(projectName);
+
+	// Создаем папку проекта
+	QDir dir;
+	if (!dir.mkpath(fullPath)) {
+		QMessageBox::warning(this, tr("Ошибка"), tr("Не удалось создать папку проекта."));
+		return;
+	}
+
+	// Создаем XML документ
+	QDomDocument document;
+	QDomElement root = document.createElement("Project");
+	document.appendChild(root);
+
+	// Добавляем данные в XML
+	QDomElement unitsElement = document.createElement("Units");
+	unitsElement.setAttribute("Geometry", ui->dimsComboBox->currentText());
+	unitsElement.setAttribute("Frequency", ui->freqsComboBox->currentText());
+	unitsElement.setAttribute("Time", ui->timeComboBox->currentText());
+	root.appendChild(unitsElement);
+
+	QDomElement solverElement = document.createElement("Solver");
+	solverElement.setAttribute("Type", ui->solverComboBox->currentText());
+	root.appendChild(solverElement);
+
+	QDomElement frequencyElement = document.createElement("FrequencyRange");
+	frequencyElement.setAttribute("Min", ui->freqMinEdit->text());
+	frequencyElement.setAttribute("Max", ui->freqMaxEdit->text());
+	root.appendChild(frequencyElement);
+
+	if (ui->freqStepRadioButton->isChecked()) {
+		QDomElement stepElement = document.createElement("FrequencyStep");
+		stepElement.setAttribute("Value", ui->freqStepLineEdit->text());
+		root.appendChild(stepElement);
+	}
+	else if (ui->pointsNumberRadioButton->isChecked()) {
+		QDomElement pointsElement = document.createElement("PointsNumber");
+		pointsElement.setAttribute("Value", ui->pointsNumberEdit->text());
+		root.appendChild(pointsElement);
+	}
+
+	// Сохранение XML в файл
+	QString filePath = QDir(fullPath).filePath("project.xml");
+	QFile file(filePath);
+	if (!file.open(QIODevice::WriteOnly)) {
+		QMessageBox::warning(this, tr("Ошибка"), tr("Не удалось создать XML файл проекта."));
+		return;
+	}
+
+	QTextStream stream(&file);
+	stream << document.toString();
+	file.close();
+
+	// Выполнение оставшихся операций
+	ui->stackedWidget->setCurrentIndex(0);
+	clearAllInputData();
 	emit projectIsReady();
-	QMessageBox::information(this, tr("Проект создан"), "Ваш проект успешно создан");
 	close();
 }
+

@@ -32,7 +32,7 @@ CMainWindow::CMainWindow(QWidget* parent) :
 {
     ui->setupUi(this);
     ui->statusBar->addPermanentWidget(new QLabel(" ")); // footer status
-	
+	ui->statusBar->hide();
 	ui->treeView->setMaximumWidth(200); // дерево
 	ui->textEdit->setMaximumHeight(200); // консоль
 
@@ -354,6 +354,17 @@ inline void CMainWindow::AddShapeToVTKRenderer(vtkSmartPointer<vtkRenderer> rend
 	renderer->AddActor(actor);
 }
 
+inline void CMainWindow::updateLabelPosition() {
+	int labelWidth = backPicLabel->width();
+	int labelHeight = backPicLabel->height();
+	int windowWidth = this->width();
+	int windowHeight = this->height();
+
+	// Устанавливаем метку в нижний правый угол с отступом в 10 пикселей
+	backPicLabel->move(windowWidth - labelWidth - 10, windowHeight - labelHeight - 10);
+	backPicLabel->lower();
+}
+
 // функция создания стартового окна - необходимо переделать
 void CMainWindow::createFirstTab()
 {
@@ -474,7 +485,16 @@ void CMainWindow::createFirstTab()
 	latestListWidget->addItem("Project 3 - C:/Projects/Project3/project3.proj");
 	latestListWidget->addItem("Project 4 - C:/Projects/Project4/project4.proj");
 	latestListWidget->addItem("Project 5 - C:/Projects/Project5/project5.proj");
+	latestListWidget->addItem("Project 6 - C:/Projects/Project5/project5.proj");
+	latestListWidget->addItem("Project 7 - C:/Projects/Project5/project5.proj");
+	latestListWidget->addItem("Project 8 - C:/Projects/Project5/project5.proj");
+	latestListWidget->addItem("Project 9 - C:/Projects/Project5/project5.proj");
+	latestListWidget->addItem("Project 10 - C:/Projects/Project5/project5.proj");
 	latestListWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+	latestListWidget->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+	latestListWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+	latestListWidget->setMaximumHeight(350);
+	latestListWidget->setMinimumHeight(140);
 
 	leftVertLayoutIn1->addWidget(latestListWidget);
 
@@ -518,13 +538,20 @@ void CMainWindow::createFirstTab()
 	examplesListWidget->addItem("Example 3.proj");
 	examplesListWidget->addItem("Example 4.proj");
 	examplesListWidget->addItem("Example 5.proj");
+	examplesListWidget->addItem("Example 6.proj");
+	examplesListWidget->addItem("Example 7.proj");
+	examplesListWidget->addItem("Example 8.proj");
+	examplesListWidget->addItem("Example 9.proj");
+	examplesListWidget->addItem("Example 10.proj");
 	examplesListWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+	examplesListWidget->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+	examplesListWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+	examplesListWidget->setMaximumHeight(350);
+	examplesListWidget->setMinimumHeight(140);
 
 	leftVertLayoutIn2->addWidget(examplesListWidget);
 
-
 	leftHorLayout->addLayout(leftVertLayoutIn2);
-
 
 	leftVertLayout->addLayout(leftHorLayout);
 
@@ -553,14 +580,18 @@ void CMainWindow::createFirstTab()
 	guideButton->setIconSize(QSize(36, 36));
 	guideButton->setStyleSheet(
 		"QPushButton {"
-		"    border: 1px solid #dcdcdc;"                      // Убираем границы
-		"    background-color: transparent;"     // Прозрачный фон
-		"    text-align: left;"                  // Выровнять текст по левому краю
+		"    border: 1px solid #dcdcdc;"          // Устанавливаем границы
+		"    background-color: transparent;"      // Прозрачный фон
+		"    text-align: left;"                   // Выровнять текст по левому краю
+		"}"
+		"QPushButton:hover {"
+		"    background-color: #dcdcdc;"          // Серый фон при наведении
 		"}"
 	);
 	guideButton->setText("Руководство пользователя");
 	//guideButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
-	guideButton->setMaximumWidth(350);
+	guideButton->setMaximumWidth(300);
+	guideButton->setMinimumWidth(300);
 	rightVertLayout->addWidget(guideButton);
 
 	aboutButton = new QPushButton(centralwidgetMenu);
@@ -569,13 +600,17 @@ void CMainWindow::createFirstTab()
 	aboutButton->setIconSize(QSize(36, 36));
 	aboutButton->setStyleSheet(
 		"QPushButton {"
-		"    border: 1px solid #dcdcdc;"                      // Убираем границы
-		"    background-color: transparent;"     // Прозрачный фон
-		"    text-align: left;"                  // Выровнять текст по левому краю
+		"    border: 1px solid #dcdcdc;"          // Устанавливаем границы
+		"    background-color: transparent;"      // Прозрачный фон
+		"    text-align: left;"                   // Выровнять текст по левому краю
+		"}"
+		"QPushButton:hover {"
+		"    background-color: #dcdcdc;"          // Серый фон при наведении
 		"}"
 	);
 	aboutButton->setText("О программе");
-	aboutButton->setMaximumWidth(350);
+	aboutButton->setMaximumWidth(300);
+	aboutButton->setMinimumWidth(300);
 	//aboutButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
 
 	rightVertLayout->addWidget(aboutButton);
@@ -589,7 +624,7 @@ void CMainWindow::createFirstTab()
 
 	infoTextBrowser = new QTextBrowser(centralwidgetMenu);
 	infoTextBrowser->setObjectName(QString::fromUtf8("infoTextBrowser"));
-	infoTextBrowser->setStyleSheet(QString::fromUtf8("background-color: rgb(240, 240, 240); border: none;"));
+	infoTextBrowser->setStyleSheet(QString::fromUtf8("background: transparent; border: none;"));
 	infoTextBrowser->setPlainText("Проект: Project 1\n"
 		"Расположение: C:/Projects/Project1/project1.proj\n"
 		"Дата создания: 12 января 2024 г.\n"
@@ -597,19 +632,32 @@ void CMainWindow::createFirstTab()
 		"Автор: Иван Иванов\n"
 		"Описание:\n"
 		"Этот проект включает в себя разработку и симуляцию фазированных антенных решеток. Основные цели проекта включают оптимизацию структуры решеток для повышения эффективности и уменьшения помех");
-	infoTextBrowser->setMaximumWidth(350);
+	infoTextBrowser->setMaximumWidth(300);
+	infoTextBrowser->setMinimumWidth(300);
 	//infoTextBrowser->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
 
 	rightVertLayout->addWidget(infoTextBrowser);
 
-
 	mainHorLayout->addLayout(rightVertLayout);
-	QLabel* emptyLabel = new QLabel("");
-	emptyLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-	mainHorLayout->addWidget(emptyLabel);
-
+	QLabel* emptyHorLabel = new QLabel("");
+	emptyHorLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+	mainHorLayout->addWidget(emptyHorLabel);
 
 	verticalLayout_5->addLayout(mainHorLayout);
+
+	QLabel* emptyVertLabel = new QLabel("");
+	emptyVertLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::MinimumExpanding);
+	verticalLayout_5->addWidget(emptyVertLabel);
+
+	backPicLabel = new QLabel(" ", this);
+	backPicLabel->setMinimumWidth(300);
+	backPicLabel->setMinimumHeight(163);
+	backPicLabel->setStyleSheet("background-image: url(:/icons/icons/back.png);"
+		"background-position: bottom right;"
+		"background-repeat: no-repeat;");
+	updateLabelPosition();
+
+
 	centralwidgetMenu->hide();
 }
 void CMainWindow::onCreateProjectButtonClicked() {
@@ -619,6 +667,9 @@ void CMainWindow::projectCreationSlot()
 {
 	tabToolbar->getTabWidget()->setTabEnabled(1, true); // разблокируем вкладки
 	tabToolbar->getTabWidget()->setTabEnabled(2, true);
+
+	tabToolbar->SetCurrentTab(1);
+	// WindowTitle должен стать равным имени проекта
 }
 void CMainWindow::displayMenuWidgets(int a) {
 	tabToolbar->SetCurrentTab(a);

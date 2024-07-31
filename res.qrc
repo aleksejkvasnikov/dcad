@@ -36,13 +36,14 @@
         <file>icons/settings.png</file>
         <file>icons/units.png</file>
         <file>icons/11865390.png</file>
-        <file>icons/bg1.png</file>
         <file>icons/field.png</file>
         <file>icons/default.png</file>
         <file>icons/hover.png</file>
         <file>icons/pressed.png</file>
         <file>icons/fdtd.png</file>
         <file>icons/mom.png</file>
+        <file>icons/bg1.png</file>
+        <file>icons/back.png</file>
     </qresource>
     <qresource prefix="/tt">
         <file>tabtoolbar.json</file>
