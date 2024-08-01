@@ -45,12 +45,15 @@ set(SRC_LIST
 	${SRCROOT}/projectcreator.h
 	${SRCROOT}/freqssettings.h
 	${SRCROOT}/freqssettings.cpp
+	${SRCROOT}/unitssettings.cpp
+	${SRCROOT}/unitssettings.h
 )
 
 set(UIS
     ${SRCROOT}/mainwindow.ui
 	${SRCROOT}/projectcreator.ui
 	${SRCROOT}/freqssettings.ui
+	${SRCROOT}/unitssettings.ui
 )
 
 set(RES

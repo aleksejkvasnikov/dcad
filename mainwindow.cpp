@@ -89,6 +89,27 @@ CMainWindow::CMainWindow(QWidget* parent) :
 	freqsSettings = new FreqsSettings;
 	freqsSettings->setWindowIcon(this->windowIcon());
 	QObject::connect(freqsSettings, SIGNAL(freqsSettingsWasChanged()), this, SLOT(onProjectChanges()));
+	QObject::connect(ui->actionFreqs, &QAction::triggered, this, [this]()
+	{
+		freqsSettings->setProjectData(&projectData);
+		freqsSettings->initializeField();
+		// Показываем окно настроек частот
+		freqsSettings->setWindowFlags(freqsSettings->windowFlags() | Qt::WindowStaysOnTopHint);
+		freqsSettings->show();
+	});
+
+	unitsSettings = new unitssettings;
+	unitsSettings->setWindowIcon(this->windowIcon());
+	QObject::connect(unitsSettings, SIGNAL(unitsSettingsWasChanged()), this, SLOT(onProjectChanges()));
+	QObject::connect(ui->actionUnits, &QAction::triggered, this, [this]()
+	{
+		unitsSettings->setProjectData(&projectData);
+		unitsSettings->initializeField();
+		// Показываем окно настроек частот
+		unitsSettings->setWindowFlags(freqsSettings->windowFlags() | Qt::WindowStaysOnTopHint);
+		unitsSettings->show();
+	});
+
 	// соединение кнопок
 	QObject::connect(ui->actionLoadStep, &QAction::triggered, this, [this]() // заменить позднее на загрузку модели
 	{
@@ -152,13 +173,7 @@ CMainWindow::CMainWindow(QWidget* parent) :
 	});
 	QObject::connect(tabToolbar, &tt::TabToolbar::CurrentTabChanged2, this, &CMainWindow::displayMenuWidgets);
 
-	QObject::connect(ui->actionFreqs, &QAction::triggered, this, [this]()
-	{
-		freqsSettings->setProjectData(&projectData);
-		freqsSettings->initializeField();
-		// Показываем окно настроек частот
-		freqsSettings->show();
-	});
+
 
 	// блокировка для стартового состояния
 	ui->actionClose->setEnabled(false);
@@ -482,6 +497,7 @@ void CMainWindow::saveProjectChanges()
 	}
 
 	QTextStream stream(&file);
+	stream.setCodec("UTF-8");  // Устанавливаем кодировку UTF-8
 	stream << document.toString();
 	file.close();
 }
@@ -585,7 +601,12 @@ void CMainWindow::openProject(QString filePath)
 	// Например, передать ее в другие функции или сохранить как текущий проект.
 
 	// Пример использования данных проекта:
-	QMessageBox::information(this, tr("Проект загружен"), tr("Проект '%1' успешно загружен.").arg(projectData.name));
+	QMessageBox msgBox;
+	msgBox.setWindowFlags(msgBox.windowFlags() | Qt::WindowStaysOnTopHint);
+	msgBox.setText(tr("Проект загружен"));
+	msgBox.setInformativeText(tr("Проект '%1' успешно загружен.").arg(projectData.name));
+	msgBox.exec();
+
 	currentProjectFilePath = filePath;
 
 	setWindowTitle("DETAL CAD v.1: " + projectData.name);
@@ -898,6 +919,7 @@ void CMainWindow::createFirstTab()
 }
 void CMainWindow::onCreateProjectButtonClicked() {
 	prCreator->setWindowIcon(this->windowIcon());
+	prCreator->setWindowFlags(prCreator->windowFlags() | Qt::WindowStaysOnTopHint);
 	prCreator->show();
 }
 
@@ -911,9 +933,10 @@ void CMainWindow::onOpenProjectButtonClicked()
 
 void CMainWindow::onProjectChanges()
 {
-	if(!projectData.hasUnsavedChanges){
-		projectData.hasUnsavedChanges = true;
-		setWindowTitle(this->windowTitle() + "*");
+	projectData.hasUnsavedChanges = true;
+	QString currentTitle = this->windowTitle();
+	if (!currentTitle.endsWith("*")) {
+		setWindowTitle(currentTitle + "*");
 	}
 }
 

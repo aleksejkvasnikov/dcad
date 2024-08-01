@@ -86,6 +86,7 @@
 
 #include "projectcreator.h"
 #include "freqssettings.h"
+#include "unitssettings.h"
 #include "ProjectData.h"
 #include <QResizeEvent>
 namespace Ui {
@@ -148,6 +149,7 @@ private:
 	ProjectData projectData;
 
 	FreqsSettings* freqsSettings;
+	unitssettings* unitsSettings;
 
 	QLabel *backPicLabel;
 	QString currentProjectFilePath;
