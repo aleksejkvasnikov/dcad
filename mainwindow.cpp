@@ -86,8 +86,10 @@ CMainWindow::CMainWindow(QWidget* parent) :
 	tabToolbar->getTabWidget()->setTabEnabled(1, false); // блокируем вкладки
 	tabToolbar->getTabWidget()->setTabEnabled(2, false);
 
-
-
+	freqsSettings = new FreqsSettings;
+	freqsSettings->setWindowIcon(this->windowIcon());
+	QObject::connect(freqsSettings, SIGNAL(freqsSettingsWasChanged()), this, SLOT(onProjectChanges()));
+	// соединение кнопок
 	QObject::connect(ui->actionLoadStep, &QAction::triggered, this, [this]() // заменить позднее на загрузку модели
 	{
 		QMessageBox::information(this, "Kek", "Cheburek");
@@ -111,6 +113,10 @@ CMainWindow::CMainWindow(QWidget* parent) :
 		}
 		// Очистка полей структуры
 		clearProjectData();
+		// блокировка для стартового состояния
+		ui->actionClose->setEnabled(false);
+		ui->actionSave->setEnabled(false);
+		ui->actionSaveAs->setEnabled(false);
 		// проверка на изменения - хотите сохранить?
 		close();
 	});
@@ -137,12 +143,27 @@ CMainWindow::CMainWindow(QWidget* parent) :
 		// Блокируем вкладки
 		tabToolbar->getTabWidget()->setTabEnabled(1, false);
 		tabToolbar->getTabWidget()->setTabEnabled(2, false);
+		// блокировка для стартового состояния
+		ui->actionClose->setEnabled(false);
+		ui->actionSave->setEnabled(false);
+		ui->actionSaveAs->setEnabled(false);
 		// Устанавливаем заголовок окна
 		setWindowTitle("DETAL CAD v.1");
 	});
 	QObject::connect(tabToolbar, &tt::TabToolbar::CurrentTabChanged2, this, &CMainWindow::displayMenuWidgets);
 
+	QObject::connect(ui->actionFreqs, &QAction::triggered, this, [this]()
+	{
+		freqsSettings->setProjectData(&projectData);
+		freqsSettings->initializeField();
+		// Показываем окно настроек частот
+		freqsSettings->show();
+	});
 
+	// блокировка для стартового состояния
+	ui->actionClose->setEnabled(false);
+	ui->actionSave->setEnabled(false);
+	ui->actionSaveAs->setEnabled(false);
 
 
 	tabToolbar->SetStyle("Kool");
@@ -406,6 +427,13 @@ inline void CMainWindow::AddShapeToVTKRenderer(vtkSmartPointer<vtkRenderer> rend
 
 void CMainWindow::saveProjectChanges()
 {
+	// удаляем *
+	if(projectData.hasUnsavedChanges){
+		QString newTitle = this->windowTitle();
+		newTitle.chop(1);
+		setWindowTitle(newTitle);
+	}
+
 	// Логика сохранения изменений в XML-файл
 	QString filePath = currentProjectFilePath;  // путь к файлу проекта сохранен в переменной
 	QFile file(filePath);
@@ -510,7 +538,7 @@ void CMainWindow::openProject(QString filePath)
 		QMessageBox::warning(this, tr("Ошибка"), tr("Неверный формат файла проекта."));
 		return;
 	}
-
+	// считывание кириллицы не работает
 	QDomElement projectInfoElement = root.firstChildElement("ProjectInfo");
 	if (!projectInfoElement.isNull()) {
 		projectData.name = projectInfoElement.attribute("Name");
@@ -552,6 +580,7 @@ void CMainWindow::openProject(QString filePath)
 		projectData.useFreqStep = false;
 	}
 
+
 	// Теперь projectData заполнена, и вы можете использовать эту структуру для дальнейшей работы
 	// Например, передать ее в другие функции или сохранить как текущий проект.
 
@@ -563,6 +592,11 @@ void CMainWindow::openProject(QString filePath)
 
 	tabToolbar->getTabWidget()->setTabEnabled(1, true); // разблокируем вкладки
 	tabToolbar->getTabWidget()->setTabEnabled(2, true);
+
+	// разблокируем
+	ui->actionClose->setEnabled(true);
+	ui->actionSave->setEnabled(true);
+	ui->actionSaveAs->setEnabled(true);
 
 	tabToolbar->SetCurrentTab(1);
 }
@@ -863,6 +897,7 @@ void CMainWindow::createFirstTab()
 	centralwidgetMenu->hide();
 }
 void CMainWindow::onCreateProjectButtonClicked() {
+	prCreator->setWindowIcon(this->windowIcon());
 	prCreator->show();
 }
 
@@ -872,6 +907,14 @@ void CMainWindow::onOpenProjectButtonClicked()
 	if (filePath.isEmpty())
 		return;
 	openProject(filePath);
+}
+
+void CMainWindow::onProjectChanges()
+{
+	if(!projectData.hasUnsavedChanges){
+		projectData.hasUnsavedChanges = true;
+		setWindowTitle(this->windowTitle() + "*");
+	}
 }
 
 void CMainWindow::displayMenuWidgets(int a) {

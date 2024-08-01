@@ -43,11 +43,14 @@ set(SRC_LIST
     ${SRCROOT}/mainwindow.h
 	${SRCROOT}/projectcreator.cpp
 	${SRCROOT}/projectcreator.h
+	${SRCROOT}/freqssettings.h
+	${SRCROOT}/freqssettings.cpp
 )
 
 set(UIS
     ${SRCROOT}/mainwindow.ui
 	${SRCROOT}/projectcreator.ui
+	${SRCROOT}/freqssettings.ui
 )
 
 set(RES

@@ -19,11 +19,6 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class ProjectCreator; }
 QT_END_NAMESPACE
 
-struct ProjectSettings{
-    QString projectDir;
-    QString projectName;
-};
-
 
 class ProjectCreator : public QMainWindow
 {
@@ -74,7 +69,6 @@ private:
     bool isProjectNameValid(const QString &name);
 
     Ui::ProjectCreator *ui;
-    ProjectSettings* prSet;
 };
 
 

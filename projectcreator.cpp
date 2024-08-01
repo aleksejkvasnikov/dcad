@@ -6,7 +6,6 @@ ProjectCreator::ProjectCreator(QWidget *parent)
     , ui(new Ui::ProjectCreator)
 {
     ui->setupUi(this);
-    prSet = new ProjectSettings;
 
 	ui->freqStepLabel->hide();
 	ui->freqStepLineEdit->hide();
@@ -14,6 +13,10 @@ ProjectCreator::ProjectCreator(QWidget *parent)
 
     // Установка валидаторов для ввода чисел
     QDoubleValidator *doubleValidator = new QDoubleValidator(this);
+	QLocale locale(QLocale::English); // Устанавливаем локаль, в которой используется точка как десятичный разделитель
+	locale.setNumberOptions(QLocale::RejectGroupSeparator); // Дополнительно, чтобы избежать проблем с разделителями групп
+	doubleValidator->setLocale(locale);
+
     QIntValidator *intValidator = new QIntValidator(this);
 
     ui->freqMinEdit->setValidator(doubleValidator);
@@ -26,6 +29,8 @@ ProjectCreator::ProjectCreator(QWidget *parent)
     ui->freqsTextBrowser->setStyleSheet("QTextBrowser { border: none; background: transparent; }");
 
 	setFixedSize(620,270);
+
+	ui->pointsNumberEdit->setText("101");
 
 }
 
@@ -50,7 +55,7 @@ void ProjectCreator::clearAllInputData()
 	ui->pointsNumberRadioButton->setChecked(true);
 	ui->pointsNumberRadioButton->setChecked(false);
 
-	ui->pointsNumberEdit->setText("1001");
+	ui->pointsNumberEdit->setText("101");
 	ui->freqStepLineEdit->clear();
 }
 
@@ -288,11 +293,11 @@ void ProjectCreator::on_createButton4_clicked()
 	projectInfoElement.setAttribute("Directory", fullPath);
 	projectInfoElement.setAttribute("CreationDate", creationDate);
 	projectInfoElement.setAttribute("LastModifiedDate", creationDate);  // Добавляем дату последнего изменения
-	projectInfoElement.setAttribute("Author", authorName);
+	projectInfoElement.setAttribute("Author", authorName); // может быть проблема с кириллицей
 	root.appendChild(projectInfoElement);
 
 	QDomElement unitsElement = document.createElement("Units");
-	unitsElement.setAttribute("Geometry", ui->dimsComboBox->currentText()); // заменить на латиницу!!!!
+	unitsElement.setAttribute("Geometry", ui->dimsComboBox->currentText());
 	unitsElement.setAttribute("Frequency", ui->freqsComboBox->currentText());
 	unitsElement.setAttribute("Time", ui->timeComboBox->currentText());
 	root.appendChild(unitsElement);
@@ -326,6 +331,7 @@ void ProjectCreator::on_createButton4_clicked()
 	}
 
 	QTextStream stream(&file);
+	stream.setCodec("UTF-8");  // Устанавливаем кодировку UTF-8
 	stream << document.toString();
 	file.close();
 

@@ -85,6 +85,8 @@
 
 
 #include "projectcreator.h"
+#include "freqssettings.h"
+#include "ProjectData.h"
 #include <QResizeEvent>
 namespace Ui {
 class MainWindow;
@@ -100,24 +102,7 @@ struct InternalData
 	Standard_Boolean hasColors[XCAFDoc_ColorCurv + 1];
 	Quantity_ColorRGBA colors[XCAFDoc_ColorCurv + 1];
 };
-struct ProjectData {
-	QString name;
-	QString directory;
-	QString creationDate;
-	QString lastModifiedDate;
-	QString author;
-	QString geometryUnits;
-	QString frequencyUnits;
-	QString timeUnits;
-	QString solverType;
-	QString freqMin;
-	QString freqMax;
-	QString freqStep;
-	QString pointsNumber;
-	bool useFreqStep;
-	bool usePointsNumber;
-	bool hasUnsavedChanges = true; // заменить!!!!
-};
+
 class CMainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -138,6 +123,7 @@ public slots:
 	void onCreateProjectButtonClicked();
 	void openProject(QString filePath);
 	void onOpenProjectButtonClicked();
+	void onProjectChanges();
 protected:
 	void resizeEvent(QResizeEvent *event) override {
 		QMainWindow::resizeEvent(event);
@@ -160,6 +146,8 @@ private:
 	QWidget *centralwidgetMenu;
 	ProjectCreator* prCreator;
 	ProjectData projectData;
+
+	FreqsSettings* freqsSettings;
 
 	QLabel *backPicLabel;
 	QString currentProjectFilePath;
