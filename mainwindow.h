@@ -87,6 +87,7 @@
 #include "projectcreator.h"
 #include "freqssettings.h"
 #include "unitssettings.h"
+#include "cdsettings.h"
 #include "ProjectData.h"
 #include <QResizeEvent>
 namespace Ui {
@@ -123,8 +124,10 @@ public slots:
 	void displayMenuWidgets(int a);
 	void onCreateProjectButtonClicked();
 	void openProject(QString filePath);
+	void openCDsettingFile(QString projectFilePath);
 	void onOpenProjectButtonClicked();
 	void onProjectChanges();
+	void onCDChanges();
 protected:
 	void resizeEvent(QResizeEvent *event) override {
 		QMainWindow::resizeEvent(event);
@@ -147,14 +150,17 @@ private:
 	QWidget *centralwidgetMenu;
 	ProjectCreator* prCreator;
 	ProjectData projectData;
+	CDData cdData;
 
 	FreqsSettings* freqsSettings;
 	unitssettings* unitsSettings;
+	CDSettings* cdSettings;
 
 	QLabel *backPicLabel;
 	QString currentProjectFilePath;
 
 	void saveProjectChanges();
+	void saveCDchanges();
 	void updateLabelPosition();
 	void clearProjectData();
 	void createFirstTab();

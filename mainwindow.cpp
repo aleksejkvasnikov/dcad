@@ -94,7 +94,7 @@ CMainWindow::CMainWindow(QWidget* parent) :
 		freqsSettings->setProjectData(&projectData);
 		freqsSettings->initializeField();
 		// Показываем окно настроек частот
-		freqsSettings->setWindowFlags(freqsSettings->windowFlags() | Qt::WindowStaysOnTopHint);
+		freqsSettings->setWindowFlags(Qt::Window | Qt::WindowCloseButtonHint | Qt::WindowStaysOnTopHint);
 		freqsSettings->show();
 	});
 
@@ -105,9 +105,22 @@ CMainWindow::CMainWindow(QWidget* parent) :
 	{
 		unitsSettings->setProjectData(&projectData);
 		unitsSettings->initializeField();
-		// Показываем окно настроек частот
-		unitsSettings->setWindowFlags(freqsSettings->windowFlags() | Qt::WindowStaysOnTopHint);
+		// Показываем окно настроек единиц
+		unitsSettings->setWindowFlags(Qt::Window | Qt::WindowCloseButtonHint | Qt::WindowStaysOnTopHint);
 		unitsSettings->show();
+	});
+
+	cdSettings = new CDSettings;
+	cdSettings->setWindowIcon(this->windowIcon());
+	QObject::connect(cdSettings, SIGNAL(cdSettingsWasChanged()), this, SLOT(onCDChanges()));
+	QObject::connect(ui->actionCD, &QAction::triggered, this, [this]()
+	{
+		cdSettings->setProjectData(&projectData);
+		cdSettings->setCDData(&cdData);
+		cdSettings->initializeField();
+		// Показываем окно настроек расчетной области
+		cdSettings->setWindowFlags(Qt::Window | Qt::WindowCloseButtonHint | Qt::WindowStaysOnTopHint);
+		cdSettings->show();
 	});
 
 	// соединение кнопок
@@ -119,7 +132,7 @@ CMainWindow::CMainWindow(QWidget* parent) :
 	QObject::connect(ui->actionExit, &QAction::triggered, this, [this]() 
 	{
 		// Проверка на изменения
-		if (projectData.hasUnsavedChanges) { // булев флаг в структуре ProjectData
+		if (projectData.hasUnsavedChanges || cdData.hasUnsavedChanges ) { // булев флаг в структуре ProjectData
 			QMessageBox::StandardButton reply;
 			reply = QMessageBox::question(this, tr("Сохранить изменения"),
 				tr("В проект были внесены изменения. Хотите их сохранить?"),
@@ -144,7 +157,7 @@ CMainWindow::CMainWindow(QWidget* parent) :
 	QObject::connect(ui->actionClose, &QAction::triggered, this, [this]()
 	{
 		// Проверка на изменения
-		if (projectData.hasUnsavedChanges) { // булев флаг в структуре ProjectData
+		if (projectData.hasUnsavedChanges || cdData.hasUnsavedChanges) { // булев флаг в структуре ProjectData
 			QMessageBox::StandardButton reply;
 			reply = QMessageBox::question(this, tr("Сохранить изменения"),
 				tr("В проект были внесены изменения. Хотите их сохранить?"),
@@ -443,11 +456,12 @@ inline void CMainWindow::AddShapeToVTKRenderer(vtkSmartPointer<vtkRenderer> rend
 void CMainWindow::saveProjectChanges()
 {
 	// удаляем *
-	if(projectData.hasUnsavedChanges){
+	if(projectData.hasUnsavedChanges || cdData.hasUnsavedChanges){
 		QString newTitle = this->windowTitle();
 		newTitle.chop(1);
 		setWindowTitle(newTitle);
 	}
+	if (cdData.hasUnsavedChanges) saveCDchanges();
 
 	// Логика сохранения изменений в XML-файл
 	QString filePath = currentProjectFilePath;  // путь к файлу проекта сохранен в переменной
@@ -502,6 +516,62 @@ void CMainWindow::saveProjectChanges()
 	file.close();
 }
 
+void CMainWindow::saveCDchanges()
+{
+	// Получаем директорию, где находится файл проекта
+	QDir projectDir = QFileInfo(currentProjectFilePath).absoluteDir();
+
+	// Формируем путь до файла cdSettings.set
+	QString settingsFilePath = projectDir.filePath("cdSettings.set");
+
+	// Создаем объект QDomDocument для создания XML документа
+	QDomDocument document;
+
+	// Создаем корневой элемент CDSettings
+	QDomElement root = document.createElement("CDSettings");
+	document.appendChild(root);
+
+	// Создаем элемент для координат
+	QDomElement coordinatesElement = document.createElement("Coordinates");
+	root.appendChild(coordinatesElement);
+
+	// Добавляем координаты
+	coordinatesElement.appendChild(document.createElement("XMin")).appendChild(document.createTextNode(QString::number(cdData.xMin)));
+	coordinatesElement.appendChild(document.createElement("XMax")).appendChild(document.createTextNode(QString::number(cdData.xMax)));
+	coordinatesElement.appendChild(document.createElement("YMin")).appendChild(document.createTextNode(QString::number(cdData.yMin)));
+	coordinatesElement.appendChild(document.createElement("YMax")).appendChild(document.createTextNode(QString::number(cdData.yMax)));
+	coordinatesElement.appendChild(document.createElement("ZMin")).appendChild(document.createTextNode(QString::number(cdData.zMin)));
+	coordinatesElement.appendChild(document.createElement("ZMax")).appendChild(document.createTextNode(QString::number(cdData.zMax)));
+
+	// Создаем элемент для частоты
+	QDomElement frequencyElement = document.createElement("Frequency");
+	root.appendChild(frequencyElement);
+
+	// Добавляем значение частоты
+	frequencyElement.appendChild(document.createElement("Value")).appendChild(document.createTextNode(QString::number(cdData.freqValue)));
+
+	// Создаем элемент для дополнительных настроек
+	QDomElement additionalElement = document.createElement("Additional");
+	root.appendChild(additionalElement);
+
+	// Добавляем дополнительные настройки
+	additionalElement.appendChild(document.createElement("UnitsType")).appendChild(document.createTextNode(QString::number(cdData.unitsType)));
+	additionalElement.appendChild(document.createElement("FreqType")).appendChild(document.createTextNode(QString::number(cdData.freqType)));
+	additionalElement.appendChild(document.createElement("AllDirections")).appendChild(document.createTextNode(QString::number(cdData.allDirections)));
+
+	// Сохранение XML в файл
+	QFile file(settingsFilePath);
+	if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+		QMessageBox::warning(this, tr("Ошибка"), tr("Не удалось сохранить изменения расчетной области."));
+		return;
+	}
+
+	QTextStream stream(&file);
+	stream.setCodec("UTF-8");
+	stream << document.toString();
+	file.close();
+}
+
 inline void CMainWindow::updateLabelPosition() {
 	int labelWidth = backPicLabel->width();
 	int labelHeight = backPicLabel->height();
@@ -531,6 +601,18 @@ void CMainWindow::clearProjectData()
 	projectData.useFreqStep = false;
 	projectData.usePointsNumber = false;
 	projectData.hasUnsavedChanges = false; // Сбрасываем флаг изменений
+
+	cdData.xMin = 0;
+	cdData.xMax = 0;
+	cdData.yMin = 0;
+	cdData.yMax = 0;
+	cdData.zMin = 0;
+	cdData.zMax = 0;
+	cdData.allDirections = 0;
+	cdData.freqValue = 0;
+	cdData.hasUnsavedChanges = false;
+	cdData.freqType = 0;
+	cdData.unitsType = 0;
 }
 
 void CMainWindow::openProject(QString filePath)
@@ -554,7 +636,6 @@ void CMainWindow::openProject(QString filePath)
 		QMessageBox::warning(this, tr("Ошибка"), tr("Неверный формат файла проекта."));
 		return;
 	}
-	// считывание кириллицы не работает
 	QDomElement projectInfoElement = root.firstChildElement("ProjectInfo");
 	if (!projectInfoElement.isNull()) {
 		projectData.name = projectInfoElement.attribute("Name");
@@ -596,17 +677,6 @@ void CMainWindow::openProject(QString filePath)
 		projectData.useFreqStep = false;
 	}
 
-
-	// Теперь projectData заполнена, и вы можете использовать эту структуру для дальнейшей работы
-	// Например, передать ее в другие функции или сохранить как текущий проект.
-
-	// Пример использования данных проекта:
-	QMessageBox msgBox;
-	msgBox.setWindowFlags(msgBox.windowFlags() | Qt::WindowStaysOnTopHint);
-	msgBox.setText(tr("Проект загружен"));
-	msgBox.setInformativeText(tr("Проект '%1' успешно загружен.").arg(projectData.name));
-	msgBox.exec();
-
 	currentProjectFilePath = filePath;
 
 	setWindowTitle("DETAL CAD v.1: " + projectData.name);
@@ -614,12 +684,69 @@ void CMainWindow::openProject(QString filePath)
 	tabToolbar->getTabWidget()->setTabEnabled(1, true); // разблокируем вкладки
 	tabToolbar->getTabWidget()->setTabEnabled(2, true);
 
+	// загружаем файл настроек расчетной области
+	openCDsettingFile(filePath);
+
 	// разблокируем
 	ui->actionClose->setEnabled(true);
 	ui->actionSave->setEnabled(true);
 	ui->actionSaveAs->setEnabled(true);
 
 	tabToolbar->SetCurrentTab(1);
+}
+
+void CMainWindow::openCDsettingFile(QString projectFilePath)
+{
+	// Получаем директорию, где находится файл проекта
+	QDir projectDir = QFileInfo(projectFilePath).absoluteDir();
+
+	// Формируем путь до файла cdSettings.set
+	QString settingsFilePath = projectDir.filePath("cdSettings.set");
+
+	// Открываем файл cdSettings.set
+	QFile file(settingsFilePath);
+	if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+		QMessageBox::warning(this, tr("Ошибка"), tr("Не удалось открыть файл настроек расчетной области."));
+		return;
+	}
+
+	// Загружаем XML данные
+	QDomDocument document;
+	if (!document.setContent(&file)) {
+		QMessageBox::warning(this, tr("Ошибка"), tr("Не удалось разобрать XML из файла настроек расчетной области."));
+		file.close();
+		return;
+	}
+	file.close();
+
+	// Парсим XML и заполняем структуру CDData
+	QDomElement root = document.documentElement();
+	if (root.tagName() != "CDSettings") {
+		QMessageBox::warning(this, tr("Ошибка"), tr("Неверный формат XML файла настроек расчетной области."));
+		return;
+	}
+
+	QDomElement coordinatesElement = root.firstChildElement("Coordinates");
+	if (!coordinatesElement.isNull()) {
+		cdData.xMin = coordinatesElement.firstChildElement("XMin").text().toDouble();
+		cdData.xMax = coordinatesElement.firstChildElement("XMax").text().toDouble();
+		cdData.yMin = coordinatesElement.firstChildElement("YMin").text().toDouble();
+		cdData.yMax = coordinatesElement.firstChildElement("YMax").text().toDouble();
+		cdData.zMin = coordinatesElement.firstChildElement("ZMin").text().toDouble();
+		cdData.zMax = coordinatesElement.firstChildElement("ZMax").text().toDouble();
+	}
+
+	QDomElement frequencyElement = root.firstChildElement("Frequency");
+	if (!frequencyElement.isNull()) {
+		cdData.freqValue = frequencyElement.firstChildElement("Value").text().toDouble();
+	}
+
+	QDomElement additionalElement = root.firstChildElement("Additional");
+	if (!additionalElement.isNull()) {
+		cdData.unitsType = additionalElement.firstChildElement("UnitsType").text().toUShort();
+		cdData.freqType = additionalElement.firstChildElement("FreqType").text().toUShort();
+		cdData.allDirections = additionalElement.firstChildElement("AllDirections").text().toUShort();
+	}
 }
 
 // функция создания стартового окна - необходимо переделать
@@ -933,13 +1060,17 @@ void CMainWindow::onOpenProjectButtonClicked()
 
 void CMainWindow::onProjectChanges()
 {
-	projectData.hasUnsavedChanges = true;
+	//projectData.hasUnsavedChanges = true; изменение флага есть в классах настроек
 	QString currentTitle = this->windowTitle();
 	if (!currentTitle.endsWith("*")) {
 		setWindowTitle(currentTitle + "*");
 	}
 }
-
+void CMainWindow::onCDChanges() {
+	// вызов метода обновления расчетной области (3д куб)
+	//cdData.hasUnsavedChanges = true; изменение флага есть в классе настроек
+	onProjectChanges();
+}
 void CMainWindow::displayMenuWidgets(int a) {
 	tabToolbar->SetCurrentTab(a);
 

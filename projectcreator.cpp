@@ -119,6 +119,9 @@ void ProjectCreator::on_cancelButton2_clicked()
 
 void ProjectCreator::on_nextButton2_clicked()
 {
+	ui->freqMaxUnitLabel->setText(ui->freqsComboBox->currentText());
+	ui->freqMinUnitLabel->setText(ui->freqsComboBox->currentText());
+	ui->freqStepUnitLabel->setText(ui->freqsComboBox->currentText());
     ui->stackedWidget->setCurrentIndex(2);
 }
 
@@ -236,6 +239,79 @@ void ProjectCreator::on_nextButton3_clicked()
     }
 }
 
+void ProjectCreator::saveCDSettings()
+{
+	// Получаем путь к папке, где расположен .exe файл программы
+	QString iniFilePath = QCoreApplication::applicationDirPath() + "/settings.ini";
+	qDebug() << iniFilePath;
+
+	// Создаем объект QSettings для чтения из INI-файла
+	QSettings settings(iniFilePath, QSettings::IniFormat);
+	// Чтение значений из INI-файла
+	double xMin = settings.value("cdSettings/XMin", 0).toDouble();
+	double yMin = settings.value("cdSettings/YMin", 0).toDouble();
+	double zMin = settings.value("cdSettings/ZMin", 0).toDouble();
+	double xMax = settings.value("cdSettings/XMax", 0).toDouble();
+	double yMax = settings.value("cdSettings/YMax", 0).toDouble();
+	double zMax = settings.value("cdSettings/ZMax", 0).toDouble();
+	short unsigned int unitsType = settings.value("cdSettings/UnitsType", 0).toUInt();
+	short unsigned int freqType = settings.value("cdSettings/FreqType", 0).toUInt();
+	short unsigned int allDirections = settings.value("cdSettings/AllDirections", 0).toUInt();
+
+	QString projectPath = ui->dirPlaceEdit->text();
+	QString projectName = ui->prNameEdit->text();
+	QString fullPath = QDir(projectPath).filePath(projectName);
+
+	// Создаем объект QDomDocument для создания XML документа
+	QDomDocument document;
+
+	// Создаем корневой элемент
+	QDomElement root = document.createElement("CDSettings");
+	document.appendChild(root);
+
+	// Создаем элемент для координат
+	QDomElement coordinatesElement = document.createElement("Coordinates");
+	root.appendChild(coordinatesElement);
+
+	// Добавляем координаты
+	coordinatesElement.appendChild(document.createElement("XMin")).appendChild(document.createTextNode(QString::number(xMin)));
+	coordinatesElement.appendChild(document.createElement("XMax")).appendChild(document.createTextNode(QString::number(xMax)));
+	coordinatesElement.appendChild(document.createElement("YMin")).appendChild(document.createTextNode(QString::number(yMin)));
+	coordinatesElement.appendChild(document.createElement("YMax")).appendChild(document.createTextNode(QString::number(yMax)));
+	coordinatesElement.appendChild(document.createElement("ZMin")).appendChild(document.createTextNode(QString::number(zMin)));
+	coordinatesElement.appendChild(document.createElement("ZMax")).appendChild(document.createTextNode(QString::number(zMax)));
+
+	// Создаем элемент для частоты
+	QDomElement frequencyElement = document.createElement("Frequency");
+	root.appendChild(frequencyElement);
+
+	// Добавляем значение частоты
+	frequencyElement.appendChild(document.createElement("Value")).
+		appendChild(document.createTextNode(QString::number(ui->freqMinEdit->text().toDouble() + (ui->freqMaxEdit->text().toDouble() - ui->freqMinEdit->text().toDouble())/2.0)));
+
+	// Создаем элемент для единиц измерения
+	QDomElement additionalElement = document.createElement("Additional");
+	root.appendChild(additionalElement);
+
+	// Добавляем тип единиц измерения
+	additionalElement.appendChild(document.createElement("UnitsType")).appendChild(document.createTextNode(QString::number(unitsType)));
+	additionalElement.appendChild(document.createElement("FreqType")).appendChild(document.createTextNode(QString::number(freqType)));
+	additionalElement.appendChild(document.createElement("AllDirections")).appendChild(document.createTextNode(QString::number(allDirections)));
+
+	// Сохраняем документ в файл
+	QString cdfilePath = QDir(fullPath).filePath("cdSettings.set");
+	QFile file(cdfilePath);
+	if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+		qWarning("Не удалось открыть файл для записи");
+		return;
+	}
+
+	QTextStream stream(&file);
+	stream.setCodec("UTF-8");
+	stream << document.toString();
+	file.close();
+}
+
 bool ProjectCreator::isValidDouble(QLineEdit *lineEdit) {
     bool ok;
     lineEdit->text().toDouble(&ok);
@@ -334,7 +410,8 @@ void ProjectCreator::on_createButton4_clicked()
 	stream.setCodec("UTF-8");  // Устанавливаем кодировку UTF-8
 	stream << document.toString();
 	file.close();
-
+	// создание файла настроек расчетной области
+	saveCDSettings();
 	// Выполнение оставшихся операций
 	ui->stackedWidget->setCurrentIndex(0);
 	clearAllInputData();

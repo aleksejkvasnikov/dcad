@@ -47,6 +47,9 @@ set(SRC_LIST
 	${SRCROOT}/freqssettings.cpp
 	${SRCROOT}/unitssettings.cpp
 	${SRCROOT}/unitssettings.h
+	${SRCROOT}/cdsettings.cpp
+	${SRCROOT}/cdsettings.h
+	${SRCROOT}/ProjectData.h
 )
 
 set(UIS
@@ -54,6 +57,7 @@ set(UIS
 	${SRCROOT}/projectcreator.ui
 	${SRCROOT}/freqssettings.ui
 	${SRCROOT}/unitssettings.ui
+	${SRCROOT}/cdsettings.ui
 )
 
 set(RES

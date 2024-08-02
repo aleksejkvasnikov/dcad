@@ -190,7 +190,7 @@
      <normaloff>:/icons/icons/freq.png</normaloff>:/icons/icons/freq.png</iconset>
    </property>
    <property name="text">
-    <string>⠀Дипазон частот</string>
+    <string>⠀Диапазон частот</string>
    </property>
    <property name="toolTip">
     <string>Задать диапазон частот</string>

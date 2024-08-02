@@ -6,7 +6,7 @@ unitssettings::unitssettings(QWidget *parent)
     , ui(new Ui::unitssettings)
 {
     ui->setupUi(this);
-    setFixedSize(290,140);
+    setFixedSize(180,145);
 }
 
 unitssettings::~unitssettings()

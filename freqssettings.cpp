@@ -19,7 +19,7 @@ FreqsSettings::FreqsSettings(QWidget *parent)
 
 	ui->valueEdit->setValidator(intValidator);
 
-    setFixedSize(300,170);
+    setFixedSize(190,170);
 }
 
 FreqsSettings::~FreqsSettings()

@@ -14,7 +14,8 @@
 #include <QTextStream>
 #include <QDateTime>
 #include <QSysInfo>
-
+#include <QSettings>
+#include <QDebug>
 QT_BEGIN_NAMESPACE
 namespace Ui { class ProjectCreator; }
 QT_END_NAMESPACE
@@ -64,6 +65,7 @@ private slots:
 signals:
 	void projectIsReady(QString);
 private:
+	void saveCDSettings();
     bool isValidDouble(QLineEdit *lineEdit);
     bool isValidInt(QLineEdit *lineEdit);
     bool isProjectNameValid(const QString &name);
