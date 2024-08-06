@@ -50,6 +50,8 @@ set(SRC_LIST
 	${SRCROOT}/cdsettings.cpp
 	${SRCROOT}/cdsettings.h
 	${SRCROOT}/ProjectData.h
+	${SRCROOT}/monitorsettings.cpp
+	${SRCROOT}/monitorsettings.h
 )
 
 set(UIS
@@ -58,6 +60,8 @@ set(UIS
 	${SRCROOT}/freqssettings.ui
 	${SRCROOT}/unitssettings.ui
 	${SRCROOT}/cdsettings.ui
+	${SRCROOT}/monitorsettings.ui
+
 )
 
 set(RES

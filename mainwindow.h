@@ -80,6 +80,9 @@
 
 #include <vtkUnsignedCharArray.h>
 #include <vtkPointData.h>
+#include <vtkCubeSource.h>
+#include <vtkProperty.h>
+
 #include <Quantity_ColorRGBA.hxx>
 #include <XCAFDoc_ColorTool.hxx>
 
@@ -88,7 +91,10 @@
 #include "freqssettings.h"
 #include "unitssettings.h"
 #include "cdsettings.h"
+#include "monitorsettings.h"
 #include "ProjectData.h"
+
+
 #include <QResizeEvent>
 namespace Ui {
 class MainWindow;
@@ -125,9 +131,10 @@ public slots:
 	void onCreateProjectButtonClicked();
 	void openProject(QString filePath);
 	void openCDsettingFile(QString projectFilePath);
+	void openMonitorsFile(QString projectFilePath);
 	void onOpenProjectButtonClicked();
 	void onProjectChanges();
-	void onCDChanges();
+	//void onCDChanges();
 protected:
 	void resizeEvent(QResizeEvent *event) override {
 		QMainWindow::resizeEvent(event);
@@ -155,15 +162,23 @@ private:
 	FreqsSettings* freqsSettings;
 	unitssettings* unitsSettings;
 	CDSettings* cdSettings;
+	MonitorSettings* monitorSettings;
 
 	QLabel *backPicLabel;
 	QString currentProjectFilePath;
+	vtkSmartPointer<vtkActor> CDcubeActor;
 
 	void saveProjectChanges();
 	void saveCDchanges();
+	void saveMonitorChanges();
 	void updateLabelPosition();
 	void clearProjectData();
 	void createFirstTab();
+
+	int monitorCount;
+
+	void updateMonitors();
+	void displayCDBox();
 };
 
 #endif // MAINWINDOW_H

@@ -410,6 +410,14 @@ void ProjectCreator::on_createButton4_clicked()
 	stream.setCodec("UTF-8");  // Устанавливаем кодировку UTF-8
 	stream << document.toString();
 	file.close();
+	// создание пустого xml файла в директории проекта для хранения настроек монитора поля
+	QString filePath_m = QDir(fullPath).filePath("monitorSettings.set");
+	QFile file_m(filePath_m);
+	if (!file_m.open(QIODevice::WriteOnly)) {
+		QMessageBox::warning(this, tr("Ошибка"), tr("Не удалось открыть файл для записи настроек монитора."));
+		return;
+	}
+	file_m.close();
 	// создание файла настроек расчетной области
 	saveCDSettings();
 	// Выполнение оставшихся операций

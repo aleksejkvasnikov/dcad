@@ -49,6 +49,7 @@ void CDSettings::initializeField()
 	}
 	else {
 		ui->freqsLineEdit->setEnabled(true);
+		ui->freqsLineEdit->setText(QString::number(cdData->freqValue));
 	}
 	ui->unitsTypeCombo->setCurrentIndex(cdData->unitsType);
 	if (cdData->unitsType == 0) {
@@ -106,6 +107,7 @@ void CDSettings::on_okButton_clicked() {
 		QMessageBox::warning(this, tr("Ошибка"), errorMessage);
 	else {
 		if (cdData->freqValue != freq.toDouble() || cdData->unitsType != ui->unitsTypeCombo->currentIndex() ||
+			cdData->allDirections != ui->allDirectionsBox->isChecked() ||
 			cdData->xMin != ui->xMinEdit->text().toDouble() || cdData->xMax != ui->xMaxEdit->text().toDouble() ||
 			cdData->yMin != ui->yMinEdit->text().toDouble() || cdData->yMax != ui->yMaxEdit->text().toDouble() || 
 			cdData->zMin != ui->zMinEdit->text().toDouble() || cdData->zMax != ui->zMaxEdit->text().toDouble())

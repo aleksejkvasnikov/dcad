@@ -55,7 +55,7 @@ CMainWindow::CMainWindow(QWidget* parent) :
 	widget->EnabledOn();
 
 	// OCCT step parsing
-	Handle(TDocStd_Document) anXdeDoc = new TDocStd_Document("BinXCAF");
+	/*Handle(TDocStd_Document) anXdeDoc = new TDocStd_Document("BinXCAF");
 	STEPCAFControl_Reader reader;
 	reader.SetColorMode(Standard_True);
 	reader.SetNameMode(Standard_True);
@@ -75,7 +75,7 @@ CMainWindow::CMainWindow(QWidget* parent) :
 	}
 	objectsModel = new QStandardItemModel(ui->treeView);
 	load(); // загрузка объекта в дерево
-	ui->treeView->setModel(objectsModel);
+	ui->treeView->setModel(objectsModel);*/
 
 
 	// Инициализация тулбара
@@ -112,7 +112,7 @@ CMainWindow::CMainWindow(QWidget* parent) :
 
 	cdSettings = new CDSettings;
 	cdSettings->setWindowIcon(this->windowIcon());
-	QObject::connect(cdSettings, SIGNAL(cdSettingsWasChanged()), this, SLOT(onCDChanges()));
+	QObject::connect(cdSettings, SIGNAL(cdSettingsWasChanged()), this, SLOT(onProjectChanges()));
 	QObject::connect(ui->actionCD, &QAction::triggered, this, [this]()
 	{
 		cdSettings->setProjectData(&projectData);
@@ -121,6 +121,21 @@ CMainWindow::CMainWindow(QWidget* parent) :
 		// Показываем окно настроек расчетной области
 		cdSettings->setWindowFlags(Qt::Window | Qt::WindowCloseButtonHint | Qt::WindowStaysOnTopHint);
 		cdSettings->show();
+	});
+
+	monitorSettings = new MonitorSettings;
+	monitorSettings->setWindowIcon(this->windowIcon());
+	QObject::connect(monitorSettings, SIGNAL(monitorSettingsWasChanged()), this, SLOT(onProjectChanges()));
+	QObject::connect(ui->actionFieldMonitor, &QAction::triggered, this, [this]()
+	{
+		monitorSettings->setProjectData(&projectData);
+		monitorSettings->setCDData(&cdData);
+		monitorSettings->setNewObject(true);
+		monitorSettings->setCurrentMonIndex(&monitorCount);
+		monitorSettings->initializeField();
+		// Показываем окно настроек расчетной области
+		monitorSettings->setWindowFlags(Qt::Window | Qt::WindowCloseButtonHint | Qt::WindowStaysOnTopHint);
+		monitorSettings->show();
 	});
 
 	// соединение кнопок
@@ -132,7 +147,9 @@ CMainWindow::CMainWindow(QWidget* parent) :
 	QObject::connect(ui->actionExit, &QAction::triggered, this, [this]() 
 	{
 		// Проверка на изменения
-		if (projectData.hasUnsavedChanges || cdData.hasUnsavedChanges ) { // булев флаг в структуре ProjectData
+		bool monitorChanges = false;
+		for (int i = 0; i < projectData.monitors.size(); i++) if (projectData.monitors[i].hasUnsavedChanges) monitorChanges = true;
+		if (projectData.hasUnsavedChanges || cdData.hasUnsavedChanges || monitorChanges) { // булев флаг в структуре ProjectData
 			QMessageBox::StandardButton reply;
 			reply = QMessageBox::question(this, tr("Сохранить изменения"),
 				tr("В проект были внесены изменения. Хотите их сохранить?"),
@@ -157,7 +174,9 @@ CMainWindow::CMainWindow(QWidget* parent) :
 	QObject::connect(ui->actionClose, &QAction::triggered, this, [this]()
 	{
 		// Проверка на изменения
-		if (projectData.hasUnsavedChanges || cdData.hasUnsavedChanges) { // булев флаг в структуре ProjectData
+		bool monitorChanges = false;
+		for (int i = 0; i < projectData.monitors.size(); i++) if (projectData.monitors[i].hasUnsavedChanges) monitorChanges = true;
+		if (projectData.hasUnsavedChanges || cdData.hasUnsavedChanges || monitorChanges) { // булев флаг в структуре ProjectData
 			QMessageBox::StandardButton reply;
 			reply = QMessageBox::question(this, tr("Сохранить изменения"),
 				tr("В проект были внесены изменения. Хотите их сохранить?"),
@@ -456,13 +475,15 @@ inline void CMainWindow::AddShapeToVTKRenderer(vtkSmartPointer<vtkRenderer> rend
 void CMainWindow::saveProjectChanges()
 {
 	// удаляем *
-	if(projectData.hasUnsavedChanges || cdData.hasUnsavedChanges){
+	bool monitorChanges = false;
+	for (int i = 0; i < projectData.monitors.size(); i++) if (projectData.monitors[i].hasUnsavedChanges) monitorChanges = true;
+	if(projectData.hasUnsavedChanges || cdData.hasUnsavedChanges || monitorChanges){
 		QString newTitle = this->windowTitle();
 		newTitle.chop(1);
 		setWindowTitle(newTitle);
 	}
 	if (cdData.hasUnsavedChanges) saveCDchanges();
-
+	if (monitorChanges) saveMonitorChanges();
 	// Логика сохранения изменений в XML-файл
 	QString filePath = currentProjectFilePath;  // путь к файлу проекта сохранен в переменной
 	QFile file(filePath);
@@ -509,7 +530,7 @@ void CMainWindow::saveProjectChanges()
 		pointsElement.setAttribute("Value", projectData.pointsNumber);
 		root.appendChild(pointsElement);
 	}
-
+	projectData.hasUnsavedChanges = false;
 	QTextStream stream(&file);
 	stream.setCodec("UTF-8");  // Устанавливаем кодировку UTF-8
 	stream << document.toString();
@@ -565,6 +586,54 @@ void CMainWindow::saveCDchanges()
 		QMessageBox::warning(this, tr("Ошибка"), tr("Не удалось сохранить изменения расчетной области."));
 		return;
 	}
+	cdData.hasUnsavedChanges = false;
+	QTextStream stream(&file);
+	stream.setCodec("UTF-8");
+	stream << document.toString();
+	file.close();
+}
+
+void CMainWindow::saveMonitorChanges()
+{
+	// Получаем директорию, где находится файл проекта
+	QDir projectDir = QFileInfo(currentProjectFilePath).absoluteDir();
+
+	// Формируем путь до файла monitorSettings.set
+	QString settingsFilePath = projectDir.filePath("monitorSettings.set");
+
+	// Создаем объект QDomDocument для создания XML документа
+	QDomDocument document;
+
+	// Создаем корневой элемент MonitorSettings
+	QDomElement root = document.createElement("MonitorSettings");
+	document.appendChild(root);
+
+	// Проходим по всем мониторам в projectData.monitors
+	for (MonitorData& monitor : projectData.monitors) {
+		QDomElement monitorElement = document.createElement("Monitor");
+		root.appendChild(monitorElement);
+		monitorElement.appendChild(document.createElement("id")).appendChild(document.createTextNode(QString::number(monitor.id)));
+		monitorElement.appendChild(document.createElement("Name")).appendChild(document.createTextNode(monitor.name));
+		monitorElement.appendChild(document.createElement("Type")).appendChild(document.createTextNode(QString::number(monitor.type)));
+		monitorElement.appendChild(document.createElement("NameBox")).appendChild(document.createTextNode(QString::number(monitor.nameBox)));
+		monitorElement.appendChild(document.createElement("PlaceBox")).appendChild(document.createTextNode(QString::number(monitor.placeBox)));
+		monitorElement.appendChild(document.createElement("FreqValue")).appendChild(document.createTextNode(QString::number(monitor.freqValue)));
+		monitorElement.appendChild(document.createElement("FarFieldRadius")).appendChild(document.createTextNode(QString::number(monitor.farFieldRadius)));
+		monitorElement.appendChild(document.createElement("XMin")).appendChild(document.createTextNode(QString::number(monitor.xMin)));
+		monitorElement.appendChild(document.createElement("XMax")).appendChild(document.createTextNode(QString::number(monitor.xMax)));
+		monitorElement.appendChild(document.createElement("YMin")).appendChild(document.createTextNode(QString::number(monitor.yMin)));
+		monitorElement.appendChild(document.createElement("YMax")).appendChild(document.createTextNode(QString::number(monitor.yMax)));
+		monitorElement.appendChild(document.createElement("ZMin")).appendChild(document.createTextNode(QString::number(monitor.zMin)));
+		monitorElement.appendChild(document.createElement("ZMax")).appendChild(document.createTextNode(QString::number(monitor.zMax)));
+		monitor.hasUnsavedChanges = false;
+	}
+
+	// Сохранение XML в файл
+	QFile file(settingsFilePath);
+	if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+		QMessageBox::warning(this, tr("Ошибка"), tr("Не удалось сохранить изменения монитора поля."));
+		return;
+	}
 
 	QTextStream stream(&file);
 	stream.setCodec("UTF-8");
@@ -601,6 +670,7 @@ void CMainWindow::clearProjectData()
 	projectData.useFreqStep = false;
 	projectData.usePointsNumber = false;
 	projectData.hasUnsavedChanges = false; // Сбрасываем флаг изменений
+	projectData.monitors.clear();
 
 	cdData.xMin = 0;
 	cdData.xMax = 0;
@@ -686,7 +756,8 @@ void CMainWindow::openProject(QString filePath)
 
 	// загружаем файл настроек расчетной области
 	openCDsettingFile(filePath);
-
+	// загружаем файл настроек монитора поля
+	openMonitorsFile(filePath);
 	// разблокируем
 	ui->actionClose->setEnabled(true);
 	ui->actionSave->setEnabled(true);
@@ -747,6 +818,83 @@ void CMainWindow::openCDsettingFile(QString projectFilePath)
 		cdData.freqType = additionalElement.firstChildElement("FreqType").text().toUShort();
 		cdData.allDirections = additionalElement.firstChildElement("AllDirections").text().toUShort();
 	}
+	// вызов метода построения расчетной области
+	// при создании нового/открытии существующего проекта
+	displayCDBox();
+}
+
+void CMainWindow::openMonitorsFile(QString projectFilePath)
+{
+	// Получаем директорию, где находится файл проекта
+	QDir projectDir = QFileInfo(projectFilePath).absoluteDir();
+
+	// Формируем путь до файла monitorSettings.set
+	QString settingsFilePath = projectDir.filePath("monitorSettings.set");
+
+	// Открываем файл monitorSettings.set
+	QFile file(settingsFilePath);
+	if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+		QMessageBox::warning(this, tr("Ошибка"), tr("Не удалось открыть файл настроек монитора поля."));
+		return;
+	}
+
+	// Проверка, что файл не пустой
+	if (file.size() == 0) {
+		monitorCount = 0;
+		//QMessageBox::warning(this, tr("Ошибка"), tr("Файл настроек монитора пуст."));
+		file.close();
+		return;
+	}
+	// Загружаем XML данные
+	QDomDocument document;
+	if (!document.setContent(&file)) {
+		QMessageBox::warning(this, tr("Ошибка"), tr("Не удалось разобрать XML из файла настроек монитора."));
+		file.close();
+		return;
+	}
+	file.close();
+
+	// Очищаем текущий список мониторов
+	projectData.monitors.clear();
+
+	// Получаем корневой элемент
+	QDomElement root = document.documentElement();
+	if (root.tagName() != "MonitorSettings") {
+		QMessageBox::warning(this, tr("Ошибка"), tr("Неверный формат XML файла настроек монитора."));
+		return;
+	}
+	short maxid=-1;
+	// Проходим по всем элементам Monitor
+	QDomNodeList monitorNodes = root.elementsByTagName("Monitor");
+	for (int i = 0; i < monitorNodes.count(); ++i) {
+		QDomElement monitorElement = monitorNodes.at(i).toElement();
+		MonitorData monitor;
+		monitor.id = monitorElement.firstChildElement("id").text().toUShort();
+		if (monitor.id > maxid) maxid = monitor.id;
+		monitor.name = monitorElement.firstChildElement("Name").text();
+		monitor.type = monitorElement.firstChildElement("Type").text().toUShort();
+		monitor.nameBox = monitorElement.firstChildElement("NameBox").text().toUShort();
+		monitor.placeBox = monitorElement.firstChildElement("PlaceBox").text().toUShort();
+		monitor.freqValue = monitorElement.firstChildElement("FreqValue").text().toDouble();
+		monitor.farFieldRadius = monitorElement.firstChildElement("FarFieldRadius").text().toDouble();
+		monitor.xMin = monitorElement.firstChildElement("XMin").text().toDouble();
+		monitor.xMax = monitorElement.firstChildElement("XMax").text().toDouble();
+		monitor.yMin = monitorElement.firstChildElement("YMin").text().toDouble();
+		monitor.yMax = monitorElement.firstChildElement("YMax").text().toDouble();
+		monitor.zMin = monitorElement.firstChildElement("ZMin").text().toDouble();
+		monitor.zMax = monitorElement.firstChildElement("ZMax").text().toDouble();
+
+		// Устанавливаем флаг изменений в false, так как только что загрузили данные
+		monitor.hasUnsavedChanges = false;
+
+		// Добавляем монитор в вектор
+		projectData.monitors.push_back(monitor);
+	}
+	monitorCount = maxid+1;
+
+
+	// Вызов метода отображения монитора и добавления в дерево проекта
+	updateMonitors();
 }
 
 // функция создания стартового окна - необходимо переделать
@@ -1044,6 +1192,76 @@ void CMainWindow::createFirstTab()
 
 	centralwidgetMenu->hide();
 }
+void CMainWindow::displayCDBox()
+{
+	// используя данные из проекта, наличие загруженных файлов модели, настройки CD
+	// рисуем VTK кубик
+	double c = 299792458;
+	double freqMultiplier=1;
+	if (projectData.frequencyUnits == "КГц") freqMultiplier = 10e3;
+	else if (projectData.frequencyUnits == "МГц") freqMultiplier = 10e6;
+	else if (projectData.frequencyUnits == "ГГц") freqMultiplier = 10e9;
+
+	double sizeMultiplier = 1;
+	if (projectData.geometryUnits == "мм") sizeMultiplier = 10e-3;
+	else if (projectData.geometryUnits == "мкм") sizeMultiplier = 10e-6;
+	else if (projectData.geometryUnits == "cм") sizeMultiplier = 10e-2;
+
+	double freq = cdData.freqValue * freqMultiplier;
+
+	// если в проекте НЕТ моделей
+	double xMin, xMax, yMin, yMax, zMin, zMax;
+	//if(проверка что нет модели) - пока не реализовано
+		if (cdData.unitsType == 0) { // доля от lambda	
+			xMin = 0 - (c / freq) / cdData.xMin;
+			xMax = 0 + (c / freq) / cdData.xMax;
+
+			yMin = 0 - (c / freq) / cdData.yMin;
+			yMax = 0 + (c / freq) / cdData.yMax;
+
+			zMin = 0 - (c / freq) / cdData.zMin;
+			zMax = 0 + (c / freq) / cdData.zMax;
+
+		}
+		else {
+			xMin = 0 - cdData.xMin * sizeMultiplier;
+			xMax = 0 + cdData.xMax * sizeMultiplier;
+
+			yMin = 0 - cdData.yMin * sizeMultiplier;
+			yMax = 0 + cdData.yMax * sizeMultiplier;
+
+			zMin = 0 - cdData.zMin * sizeMultiplier;
+			zMax = 0 + cdData.zMax * sizeMultiplier;
+		}
+		// Проверяем, есть ли уже кубик, и перестраиваем его
+		if (!CDcubeActor) {
+			// Создаем новый кубик, если его еще нет
+			vtkSmartPointer<vtkCubeSource> cubeSource = vtkSmartPointer<vtkCubeSource>::New();
+			cubeSource->SetBounds(xMin, xMax, yMin, yMax, zMin, zMax);
+			cubeSource->Update();
+
+			vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+			mapper->SetInputConnection(cubeSource->GetOutputPort());
+
+			CDcubeActor = vtkSmartPointer<vtkActor>::New();
+			CDcubeActor->SetMapper(mapper);
+			CDcubeActor->GetProperty()->SetRepresentationToWireframe(); // Только ребра
+			CDcubeActor->GetProperty()->SetOpacity(0.5); // Прозрачность
+
+			mRenderer->AddActor(CDcubeActor);
+			mRenderer->ResetCamera();
+		}
+		else {
+			// Если кубик уже существует, просто обновляем его границы
+			vtkCubeSource* cubeSource = vtkCubeSource::SafeDownCast(CDcubeActor->GetMapper()->GetInputAlgorithm());
+			cubeSource->SetBounds(xMin, xMax, yMin, yMax, zMin, zMax);
+			cubeSource->Update();
+		}
+
+		// Обновляем отображение
+		//mRenderer->ResetCamera();
+		mRenderer->GetRenderWindow()->Render();
+}
 void CMainWindow::onCreateProjectButtonClicked() {
 	prCreator->setWindowIcon(this->windowIcon());
 	prCreator->setWindowFlags(prCreator->windowFlags() | Qt::WindowStaysOnTopHint);
@@ -1060,17 +1278,30 @@ void CMainWindow::onOpenProjectButtonClicked()
 
 void CMainWindow::onProjectChanges()
 {
+	// проверка того, затронули ли изменения расчетную область (центральная частота или другие единицы)
+	if(cdData.freqType == 0)
+		cdData.freqValue = projectData.freqMin.toDouble() + (projectData.freqMax.toDouble() - projectData.freqMin.toDouble()) / 2;
+
+	// вызов метода обновления расчетной области (3д куб)
+	displayCDBox();
+	// вызов метода отображения монитора
+	bool monitorChanges = false;
+	for (int i = 0; i < projectData.monitors.size(); i++) if (projectData.monitors[i].hasUnsavedChanges) monitorChanges = true;
+	if (monitorChanges) {
+		updateMonitors();
+	}
 	//projectData.hasUnsavedChanges = true; изменение флага есть в классах настроек
 	QString currentTitle = this->windowTitle();
 	if (!currentTitle.endsWith("*")) {
 		setWindowTitle(currentTitle + "*");
 	}
 }
-void CMainWindow::onCDChanges() {
-	// вызов метода обновления расчетной области (3д куб)
-	//cdData.hasUnsavedChanges = true; изменение флага есть в классе настроек
-	onProjectChanges();
+void CMainWindow::updateMonitors()
+{
+	// отображение монитора на 3д сцене
+	// обновление дерева
 }
+
 void CMainWindow::displayMenuWidgets(int a) {
 	tabToolbar->SetCurrentTab(a);
 
